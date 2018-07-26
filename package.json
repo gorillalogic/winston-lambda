@@ -1,0 +1,15 @@
+{
+  "name": "winston",
+  "version": "1.0.0",
+  "description": "JS code to handle requests to third party APIs for Winston virtual assistant",
+  "main": "handler.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Gorilla Logic",
+  "license": "MIT",
+  "dependencies": {
+    "@slack/client": "^4.3.1",
+    "axios": "^0.18.0"
+  }
+}
