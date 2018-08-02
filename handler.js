@@ -273,7 +273,7 @@ function dispatch(intentRequest, callback) {
   const intentName = intentRequest.currentIntent.name;
 
   // Dispatch to the corresponding intent handler
-  if (intentName === 'AskTimeOffBalance') {
+  if (intentName === 'TimeOffPTOBalance') {
     return getTimeOffBalance(intentRequest, callback);
   }
   // If Intent is not recognize then respond with an error
