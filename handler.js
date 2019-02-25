@@ -143,6 +143,41 @@ const filterPTOs = function(timeOffItems, ptoType) {
   }
 }
 
+/**
+ * Returns a pseudo-randomly selected joke about Chuck Norris.
+ * @return {string} A joke about Chuck Norris.
+ */
+const chuckNorrisJoke = function() {
+  let jokes = [
+    'Chuck Norris doesn\'t flush the toilet...he scares the shit out of it.',
+    'Chuck Norris has a grizzly bear carpet in his room. The bear isn\'t dead it is just afraid to move.',
+    'Chuck Norris died 20 years ago, Death just hasn\'t built up the courage to tell him yet.',
+    'While learning CPR Chuck Norris actually brought the practice dummy to life.',
+    'Chuck Norris has already been to Mars; that\'s why there are no signs of life.',
+    'Chuck Norris and Superman once fought each other on a bet. The loser had to start wearing his underwear on the outside of his pants.',
+    'Chuck norris went skydiving and his parachute failed to open, so he took it back the next day for a refund.',
+    'Chuck Norris doesn\'t dial the wrong number, you pick up the wrong phone.',
+    'Did you know Chuck Norris had a role in Star Wars?. He was the force.',
+    'Chuck Norris will never have a heart attack. His heart isn\'t nearly foolish enough to attack him.',
+    'Before going to bed, the Boogeyman always checks his closet for Chuck Norris.',
+    'Chuck Norris counted to infinity - twice.',
+    'Chuck Norris uses a stunt double during crying scenes.',
+    'Voldemort refers to Chuck Norris as "You Know Who."',
+    'When Chuck Norris does a push up, he isn\'t lifting himself up, he\'s pushing the Earth down.',
+    'Death once had a near Chuck Norris experience.',
+    'Chuck Norris frequently donates blood to the Red Cross. Just never his own.',
+    'Chuck Norris can light a fire by rubbing two ice-cubes together.',
+    'Chuck Norris once went to court for a crime, the judge pleaded guilty.',
+    'Chuck Norris ordered a Big Mac at Burger King, and got one.',
+    'Chuck Norris can pick oranges from an apple tree and make the best lemonade youve ever tasted.',
+    'Chuck Norris protects his body guards.',
+    'Chuck Norris makes onions cry.',
+    'Chuck Norris won the Boston marathon in New York.',
+    'Chuck Norris knows Victoria\'s secret.'
+  ];
+  return jokes[Math.floor(Math.random() * jokes.length)];
+}
+
 
 // ================================ BambooHR API ============================================================================
 const subDomain = 'gorillalogic';
@@ -259,6 +294,21 @@ const getTimeOffBalance = function (intentRequest, callback) {
   });
 }
 
+/**
+ * Response with a pseudo-randomly selected joke about Chuck Norris.
+ * @param {Object} intentRequest Intent request information
+ * @param {function} callback Callback function to handle the response
+ */
+const tellAJokeAboutChuckNorris = function(intentRequest, callback) {
+  let joke = chuckNorrisJoke();
+  // Success - answer to the user with the PTO days
+  callback(close(intentRequest.sessionAttributes, 'Fulfilled',
+  { 
+    contentType: 'PlainText',
+    content: joke 
+  }));
+}
+
 // ================================ Intent dispatching ===================================================================
 
 /**
@@ -275,6 +325,8 @@ function dispatch(intentRequest, callback) {
   // Dispatch to the corresponding intent handler
   if (intentName === 'TimeOffPTOBalance') {
     return getTimeOffBalance(intentRequest, callback);
+  } else if (intentName === 'FunChuckNorrisJokes') {
+    return tellAJokeAboutChuckNorris(intentRequest, callback);
   }
   // If Intent is not recognize then respond with an error
   throw new Error(`Intent with name ${intentName} not supported`);
