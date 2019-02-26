@@ -8,7 +8,7 @@
  * @summary Backend logic for Winston (Amazon Lex bot).
  * @module winstonbot
  * @author Gorilla Logic
- * @version 1.0.0
+ * @version 1.2.1
  */
 
 const axios = require('axios');
@@ -58,23 +58,35 @@ function delegate(sessionAttributes, slots) {
    };
 }
 
-// ================================ Helper Functions ===================================================================
-
-function parseLocalDate(date) {
-   /**
-    * Construct a date object in the local timezone by parsing the input date string, assuming a YYYY-MM-DD format.
-    * Note that the Date(dateString) constructor is explicitly avoided as it may implicitly assume a UTC timezone.
-    */
-  const dateComponents = date.split(/\-/);
-  return new Date(dateComponents[0], dateComponents[1] - 1, dateComponents[2]);
+function buildValidationResult(isValid, violatedSlot, messageContent) {
+  if (messageContent == null) {
+      return {
+          isValid,
+          violatedSlot,
+      };
+  }
+  return {
+      isValid,
+      violatedSlot,
+      message: { contentType: 'PlainText', content: messageContent },
+  };
 }
 
-function isValidDate(date) {
-  try {
-    return !(isNaN(parseLocalDate(date).getTime()));
-  } catch (err) {
-    return false;
-  }
+// ================================ Helper Stuff ===================================================================
+/**
+ * Collection of time-off request types from BambooHR.
+ * The ids are specific to Gorilla Logic customized settings.
+ * You can see the different options by looking at the UI and
+ * using this API call: 
+ * GET {@link https://api.bamboohr.com/api/gateway.php/gorillalogic/v1/meta/time_off/types/}
+ * With the proper API key.
+ */
+const timeOffTypes = {
+  'PTO': 1,
+  'Unpaid time off': 6,
+  'Bereavement Leave': 3,
+  'Paid Marriage Leave': 8,
+  'Travel Requests': 7
 }
 
 /**
@@ -125,7 +137,6 @@ const findPersonByEmail = function(employees, email) {
     return findings[0];
   }
 }
-
 
 /**
  * Filter the given array of objects (timeOffItems) by using 
@@ -309,6 +320,126 @@ const tellAJokeAboutChuckNorris = function(intentRequest, callback) {
   }));
 }
 
+/**
+ * Validates the provided input slots from the user and returns a validation object
+ * with a boolean value describing if validation passed and the violated slot and
+ * the error message to be sent back to the user.
+ * @param {String} typeOfTimeOff Type of timeoff requested. Uses a custom slot type from the Lex bot.
+ * @param {String} startDate The stard date in the form YYYY-MM-DD.
+ * @param {String} endDate The end date in the form YYYY-MM-DD.
+ */
+const validateTimeOffRequest = function(typeOfTimeOff, startDate, endDate) { 
+  if (typeOfTimeOff && Object.keys(timeOffTypes).indexOf(typeOfTimeOff) === -1) {
+    return buildValidationResult(false, 'typeOfTimeOff', `Sorry I can't create a time off request for ${typeOfTimeOff}, would you like a different type of time off?`);
+  }
+  if (startDate) {
+    if (new Date(startDate) < new Date()) {
+        return buildValidationResult(false, 'startDate', `I can't schedule a time off request in the past! Can you provide a different date?`);
+    }
+  }
+  if (endDate) {
+    if (new Date(endDate) < new Date(startDate)) {
+      return buildValidationResult(false, 'endDate', 'Your return date must be after your leave date! Can you try a different date?');
+    }
+  }
+  return buildValidationResult(true, null, null);
+}
+
+/**
+ * Handle the intent of a user trying to create a new time off request.
+ * @param {Object} intentRequest Intent requet information
+ * @param {function} callback Callback function to handle the response
+ */
+const createTimeOffRequest = function(intentRequest, callback) {
+  const typeOfTimeOff = intentRequest.currentIntent.slots.typeOfTimeOff;
+  const startDate = intentRequest.currentIntent.slots.startDate;
+  const endDate = intentRequest.currentIntent.slots.endDate;
+  const amount = intentRequest.currentIntent.slots.days;
+
+  if (intentRequest.invocationSource === 'DialogCodeHook') {
+    // Perform basic validation on the supplied input slots. 
+    // Use the elicitSlot dialog action to re-prompt for the first violation detected.
+    const slots = intentRequest.currentIntent.slots;
+    const validationResult = validateTimeOffRequest(typeOfTimeOff, startDate, endDate);
+    if (!validationResult.isValid) {
+        slots[`${validationResult.violatedSlot}`] = null;
+        callback(elicitSlot(intentRequest.sessionAttributes, intentRequest.currentIntent.name, slots, validationResult.violatedSlot, validationResult.message));
+        return;
+    }
+
+    const outputSessionAttributes = intentRequest.sessionAttributes;
+    callback(delegate(outputSessionAttributes, intentRequest.currentIntent.slots));
+    return;
+  }
+
+  let userId = intentRequest.userId;
+  // Extract userId needed by Slack API
+  userId = userId.slice(userId.lastIndexOf(':') + 1);
+
+  // An access token (from your Slack app or custom integration - xoxp, xoxb, or xoxa)
+  const token = process.env.slackApiToken;
+  const web = new WebClient(token);
+
+  // Request Slack API to extract the email from the user Id
+  let slackEmail = '';
+  web.users.profile.get({ user: userId })
+  .then((res) => {
+    slackEmail = res.profile.email;
+  })
+  .catch(console.error);
+
+  getEmployees( function(employees) {
+    var person = findPersonByEmail(employees, slackEmail);
+
+    if (person === undefined) {
+      console.log(`Sorry, ${slackEmail} could not be found`);
+      callback(close(intentRequest.sessionAttributes, 'Fulfilled',
+      { 
+        contentType: 'PlainText',
+        content: `Sorry, ${slackEmail} could not be found.` 
+      }));
+      return;
+    }
+
+    let timeOffTypeValue = timeOffTypes[typeOfTimeOff];
+    let xmlData = `<request>
+                      <status>requested</status>
+                      <start>${startDate}</start>
+                      <end>${endDate}</end>
+                      <timeOffTypeId>${timeOffTypeValue}</timeOffTypeId>
+                      <amount>${amount}</amount>
+                  </request>`;
+
+    bambooAPI.put('/v1/employees/'+person.id+'/time_off/request/', 
+    xmlData,
+    {headers:
+      {'Content-Type': 'text/xml'}
+    })
+    .then(function (response) {
+      let approver = response.data.approvers[0].displayName;
+      let content = 'OK, I have sent your request. Please wait for approval.';
+      if (approver !== "") {
+        content = 'OK, I have sent your request. Please wait for approval from ${approver}.';
+      }
+      // Fulfill the request
+      callback(close(intentRequest.sessionAttributes, 'Fulfilled',
+      { 
+        contentType: 'PlainText',
+        content: content 
+      }));
+    })
+    .catch(function (error) {
+      console.log(error);
+      // Fulfill the request
+      callback(close(intentRequest.sessionAttributes, 'Fulfilled',
+      { 
+        contentType: 'PlainText',
+        content: `Sorry your request failed. I got this error: ${error}.` 
+      }));
+    });
+  });
+}
+
 // ================================ Intent dispatching ===================================================================
 
 /**
@@ -327,6 +458,8 @@ function dispatch(intentRequest, callback) {
     return getTimeOffBalance(intentRequest, callback);
   } else if (intentName === 'FunChuckNorrisJokes') {
     return tellAJokeAboutChuckNorris(intentRequest, callback);
+  } else if (intentName === 'CreatePTORequest') {
+    return createTimeOffRequest(intentRequest, callback);
   }
   // If Intent is not recognize then respond with an error
   throw new Error(`Intent with name ${intentName} not supported`);
@@ -355,4 +488,4 @@ module.exports.winstonbot = (event, context, callback) => {
   } catch (err) {
       callback(err);
   }
-};
+}
