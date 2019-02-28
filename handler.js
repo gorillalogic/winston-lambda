@@ -8,11 +8,14 @@
  * @summary Backend logic for Winston (Amazon Lex bot).
  * @module winstonbot
  * @author Gorilla Logic
- * @version 1.2.1
+ * @version 1.2.5
  */
 
 const axios = require('axios');
 const { WebClient } = require('@slack/client');  // https://github.com/slackapi/node-slack-sdk
+const moment = require('moment');
+moment().format();
+require('moment-weekday-calc');
 
 // ================================ Lex Bot Helpers ===================================================================
 
@@ -87,7 +90,7 @@ const timeOffTypes = {
   'Bereavement Leave': 3,
   'Paid Marriage Leave': 8,
   'Travel Requests': 7
-}
+};
 
 /**
  * Returns a string with first letter capitalized.
@@ -98,7 +101,7 @@ const timeOffTypes = {
  */
 const capitalize = function(text) {
   return text.charAt(0).toUpperCase() + text.slice(1);
-}
+};
 
 /**
  * Finds a person on the given employees object by matching the displayName field..
@@ -121,7 +124,7 @@ const findPerson = function(employees, name) {
   if (findings.length > 0) {
     return findings[0];
   }
-}
+};
 
 /**
  * Finds a person on the given employees object by matching the workEmail field..
@@ -136,7 +139,7 @@ const findPersonByEmail = function(employees, email) {
   if (findings.length > 0) {
     return findings[0];
   }
-}
+};
 
 /**
  * Filter the given array of objects (timeOffItems) by using 
@@ -147,12 +150,12 @@ const findPersonByEmail = function(employees, email) {
  */
 const filterPTOs = function(timeOffItems, ptoType) {
   let findings = timeOffItems.filter(function(timeOffItem) {
-    return timeOffItem.name === ptoType
+    return timeOffItem.name === ptoType;
   });
   if (findings.length > 0) {
     return findings[0];
   }
-}
+};
 
 /**
  * Returns a pseudo-randomly selected joke about Chuck Norris.
@@ -187,7 +190,7 @@ const chuckNorrisJoke = function() {
     'Chuck Norris knows Victoria\'s secret.'
   ];
   return jokes[Math.floor(Math.random() * jokes.length)];
-}
+};
 
 
 // ================================ BambooHR API ============================================================================
@@ -222,7 +225,24 @@ const getEmployees = function (doSomething) {
   .catch(function (error) {
     console.log(error);
   });
-}
+};
+
+/**
+ * Get a list of who's out, including company holidays.
+ * We use this API request to get the official company holidays as it's the only way
+ * @param {string} start Start date for the query request
+ * @param {string} end End date for the query request
+ * @param {function} doSomething Callback function expected to do something with the result
+ */
+const whosOut = function (start, end, doSomething) {
+  bambooAPI.get(`/v1/time_off/whos_out?start=${start}&end=${end}`)
+  .then(function (response) {
+    doSomething(response.data);
+  })
+  .catch(function (error) {
+    console.log(error);
+  });
+};
 
 
 // ================================ Functions to handle intents =============================================================
@@ -289,7 +309,7 @@ const getTimeOffBalance = function (intentRequest, callback) {
           contentType: 'PlainText',
           content: `Sorry, could not found PTO information for ${employeeName}` 
         }));
-        return
+        return;
       }
 
       // Success - answer to the user with the PTO days
@@ -303,7 +323,7 @@ const getTimeOffBalance = function (intentRequest, callback) {
       console.log(error);
     });
   });
-}
+};
 
 /**
  * Response with a pseudo-randomly selected joke about Chuck Norris.
@@ -318,7 +338,7 @@ const tellAJokeAboutChuckNorris = function(intentRequest, callback) {
     contentType: 'PlainText',
     content: joke 
   }));
-}
+};
 
 /**
  * Validates the provided input slots from the user and returns a validation object
@@ -343,7 +363,7 @@ const validateTimeOffRequest = function(typeOfTimeOff, startDate, endDate) {
     }
   }
   return buildValidationResult(true, null, null);
-}
+};
 
 /**
  * Handle the intent of a user trying to create a new time off request.
@@ -354,7 +374,8 @@ const createTimeOffRequest = function(intentRequest, callback) {
   const typeOfTimeOff = intentRequest.currentIntent.slots.typeOfTimeOff;
   const startDate = intentRequest.currentIntent.slots.startDate;
   const endDate = intentRequest.currentIntent.slots.endDate;
-  const amount = intentRequest.currentIntent.slots.days;
+  // Session attributes from the intent.
+  var outputSessionAttributes = intentRequest.sessionAttributes;
 
   if (intentRequest.invocationSource === 'DialogCodeHook') {
     // Perform basic validation on the supplied input slots. 
@@ -367,7 +388,14 @@ const createTimeOffRequest = function(intentRequest, callback) {
         return;
     }
 
-    const outputSessionAttributes = intentRequest.sessionAttributes;
+    if (startDate && endDate) {
+      // @hack: For some reason this came null on Slack tests
+      if (!outputSessionAttributes) {
+        outputSessionAttributes = { displayStart:'', displayEnd: '' };
+      }
+      outputSessionAttributes.displayStart = moment(startDate).format('dddd, MMMM Do YYYY');
+      outputSessionAttributes.displayEnd = moment(endDate).format('dddd, MMMM Do YYYY');
+    }
     callback(delegate(outputSessionAttributes, intentRequest.currentIntent.slots));
     return;
   }
@@ -401,44 +429,80 @@ const createTimeOffRequest = function(intentRequest, callback) {
       return;
     }
 
-    let timeOffTypeValue = timeOffTypes[typeOfTimeOff];
-    let xmlData = `<request>
-                      <status>requested</status>
-                      <start>${startDate}</start>
-                      <end>${endDate}</end>
-                      <timeOffTypeId>${timeOffTypeValue}</timeOffTypeId>
-                      <amount>${amount}</amount>
-                  </request>`;
+    // Calculate the amount of working days to request
+    if (startDate && endDate) {
+      whosOut( startDate, endDate, function(response) {
+        // Filter non-holidays elements from this 
+        // response and put the dates for company
+        // holidays into an array.
+        let items = response.filter(function (item) {
+            return (item.type === 'holiday');
+        });
+        let holidays = [];
+        items.forEach(item => {
+            holidays.push(item.start);
+        });
+        
+        // Calculate the amount of working days
+        // between the two specified dates excluding
+        // weekends and company holidays
+        let amount = moment().isoWeekdayCalc({  
+            rangeStart: startDate,  
+            rangeEnd: endDate,  
+            weekdays: [1,2,3,4,5],  
+            exclusions: holidays
+        });
 
-    bambooAPI.put('/v1/employees/'+person.id+'/time_off/request/', 
-    xmlData,
-    {headers:
-      {'Content-Type': 'text/xml'}
-    })
-    .then(function (response) {
-      let approver = response.data.approvers[0].displayName;
-      let content = 'OK, I have sent your request. Please wait for approval.';
-      if (approver !== "") {
-        content = 'OK, I have sent your request. Please wait for approval from ${approver}.';
-      }
-      // Fulfill the request
-      callback(close(intentRequest.sessionAttributes, 'Fulfilled',
-      { 
-        contentType: 'PlainText',
-        content: content 
-      }));
-    })
-    .catch(function (error) {
-      console.log(error);
-      // Fulfill the request
-      callback(close(intentRequest.sessionAttributes, 'Fulfilled',
-      { 
-        contentType: 'PlainText',
-        content: `Sorry your request failed. I got this error: ${error}.` 
-      }));
-    });
+        let timeOffTypeValue = timeOffTypes[typeOfTimeOff];
+        let xmlData = `<request>
+                          <status>requested</status>
+                          <start>${startDate}</start>
+                          <end>${endDate}</end>
+                          <timeOffTypeId>${timeOffTypeValue}</timeOffTypeId>
+                          <amount>${amount}</amount>
+                      </request>`;
+
+        console.log(xmlData);
+
+        // Send the time-off request to BambooHR API
+        bambooAPI.put('/v1/employees/'+person.id+'/time_off/request/', 
+        xmlData,
+        {headers:
+          {'Content-Type': 'text/xml'}
+        })
+        .then(function (response) {
+          let approver = response.data.approvers[0].displayName;
+          let content = `OK ${person.firstName}, I have sent your request. Please wait for approval.`;
+          if (approver !== '') {
+            content = `OK ${person.firstName}, I have sent your request. Please wait for approval from ${approver}.`;
+          }
+          // Fulfill the request
+          callback(close(intentRequest.sessionAttributes, 'Fulfilled',
+          { 
+            contentType: 'PlainText',
+            content: content 
+          }));
+        })
+        .catch(function (error) {
+          console.log(error);
+          // Fulfill the request
+          callback(close(intentRequest.sessionAttributes, 'Fulfilled',
+          { 
+            contentType: 'PlainText',
+            content: `Sorry your request failed. I got this error: ${error}.` 
+          }));
+        });
+        
+        // Fulfill the request
+        /*callback(close(intentRequest.sessionAttributes, 'Fulfilled',
+        { 
+          contentType: 'PlainText',
+          content: `Ok, sent - testing completed` 
+        }));*/
+      });
+    }    
   });
-}
+};
 
 // ================================ Intent dispatching ===================================================================
 
@@ -488,4 +552,4 @@ module.exports.winstonbot = (event, context, callback) => {
   } catch (err) {
       callback(err);
   }
-}
+};
