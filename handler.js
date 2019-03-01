@@ -391,10 +391,17 @@ const createTimeOffRequest = function(intentRequest, callback) {
     if (startDate && endDate) {
       // @hack: For some reason this came null on Slack tests
       if (!outputSessionAttributes) {
-        outputSessionAttributes = { displayStart:'', displayEnd: '' };
+        outputSessionAttributes = { confirmationPrompt:'' };
       }
-      outputSessionAttributes.displayStart = moment(startDate).format('dddd, MMMM Do YYYY');
-      outputSessionAttributes.displayEnd = moment(endDate).format('dddd, MMMM Do YYYY');
+      let displayStart = moment(startDate).format('dddd, MMMM Do YYYY');
+      let displayEnd = moment(endDate).format('dddd, MMMM Do YYYY');
+
+      let confirmationPrompt = `Can you confirm your ${typeOfTimeOff} request from ${displayStart} to ${displayEnd}?`;
+      if (startDate === endDate) {
+        confirmationPrompt = `Can you confirm your ${typeOfTimeOff} request for ${displayStart}?`;
+      }
+
+      outputSessionAttributes.confirmationPrompt = confirmationPrompt;
     }
     callback(delegate(outputSessionAttributes, intentRequest.currentIntent.slots));
     return;
@@ -492,13 +499,7 @@ const createTimeOffRequest = function(intentRequest, callback) {
             content: `Sorry your request failed. I got this error: ${error}.` 
           }));
         });
-        
-        // Fulfill the request
-        /*callback(close(intentRequest.sessionAttributes, 'Fulfilled',
-        { 
-          contentType: 'PlainText',
-          content: `Ok, sent - testing completed` 
-        }));*/
+
       });
     }    
   });
