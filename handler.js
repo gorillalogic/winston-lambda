@@ -8,7 +8,7 @@
  * @summary Backend logic for Winston (Amazon Lex bot).
  * @module winstonbot
  * @author Gorilla Logic
- * @version 1.2.84
+ * @version 1.2.90
  */
 
 const axios = require("axios");
@@ -132,17 +132,6 @@ const timeOffTypes = {
 };
 
 /**
- * Returns a string with first letter capitalized.
- * If the first letter of a string is an uppercase letter or a non-alphabetic character,
- * it returns the original string.
- * @param {string} text The string to be capitalized.
- * @return {string} The given text with the first letter capitalized.
- */
-const capitalize = function(text) {
-  return text.charAt(0).toUpperCase() + text.slice(1);
-};
-
-/**
  * Finds a person on the given employees object by matching the workEmail field..
  * @param {Object[]} employees Complete list of company employees.
  * @param {string} name The complete name of the employee to search for.
@@ -242,15 +231,21 @@ const bambooAPI = axios.create({
  * Gets the complete list of employees from the BambooHR system.
  * @param {function} doSomething Callback function expected to do something with the list of employees
  */
-const getEmployees = function(doSomething) {
-  bambooAPI
-    .get("/v1/employees/directory")
-    .then(function(response) {
-      doSomething(response.data.employees);
-    })
-    .catch(function(error) {
-      console.log(error);
-    });
+const getEmployees = () => {
+  return bambooAPI.get("/v1/employees/directory");
+};
+
+/**
+ * Gets the time off balance from BambooHR system.
+ * @param {string} id The Slack user id
+ * @param {string} y The year in the form 'yyyy'
+ * @param {string} m The month in the form 'mm'
+ * @param {string} d The day in the form 'dd'
+ */
+const calculateTimeOffBalance = (id, y, m, d) => {
+  return bambooAPI.get(
+    "/v1/employees/" + id + "/time_off/calculator/?end=" + y + "-" + m + "-" + d
+  );
 };
 
 /**
@@ -302,6 +297,15 @@ const getSlackUserInfo = userId => {
   return web.users.info({ user: userId });
 };
 
+/**
+ * Retrieve the profile information from Slack for the given ID
+ * @param {string} userId Slack user ID
+ */
+const getSlackUserProfile = userId => {
+  const web = new WebClient(slackApiToken);
+  return web.users.profile.get({ user: userId });
+};
+
 // ================================ ParkingBot API ============================================================================
 // Parking bot configuration
 const parkingAPI = axios.create({
@@ -322,87 +326,56 @@ const parkingAPI = axios.create({
  * @param {Object} intentRequest Intent request information
  * @param {function} callback Callback function to handle the response
  */
-const getTimeOffBalance = function(intentRequest, callback) {
+const getTimeOffBalance = async function(intentRequest, callback) {
   const userId = getSlackUserId(intentRequest);
-
-  // An access token (from your Slack app or custom integration - xoxp, xoxb, or xoxa)
-  const token = process.env.slackApiToken;
-  const web = new WebClient(token);
-
   // Request Slack API to extract the email from the user Id
-  let slackEmail = "";
-  web.users.profile
-    .get({ user: userId })
-    .then(res => {
-      slackEmail = res.profile.email;
-    })
-    .catch(console.error);
+  let userProfile = null;
+  let person = null;
+  try {
+    userProfile = await getSlackUserProfile(userId);
+    const getEmployeesResult = await getEmployees();
 
-  // We assume the request to get the employees from BambooHR will give
-  // time to the previous request to fulfill therefore enforcing concurrency
-  // @todo: handle the concurrency properly
-
-  getEmployees(function(employees) {
-    var person = findPersonByEmail(employees, slackEmail);
+    let slackEmail = userProfile.profile.email;
+    let employees = getEmployeesResult.data.employees;
+    person = findPersonByEmail(employees, slackEmail);
 
     if (person === undefined) {
-      console.log(`Sorry, ${slackEmail} could not be found`);
-      callback(
-        close(intentRequest.sessionAttributes, "Fulfilled", {
-          contentType: "PlainText",
-          content: `Sorry, ${slackEmail} could not be found.`
-        })
-      );
-      return;
+      let err = `Sorry, ${slackEmail} could not be found`;
+      throw err;
     }
+  } catch (error) {
+    console.log(error);
+    fulfillWithError(intentRequest, callback, error);
+    return;
+  }
 
-    var today = new Date();
-    var dd = today.getDate();
-    var mm = today.getMonth() + 1; //January is 0!
-    var yyyy = today.getFullYear();
+  let today = new Date();
+  let dd = today.getDate();
+  let mm = today.getMonth() + 1; //January is 0!
+  let yyyy = today.getFullYear();
 
-    bambooAPI
-      .get(
-        "/v1/employees/" +
-          person.id +
-          "/time_off/calculator/?end=" +
-          yyyy +
-          "-" +
-          mm +
-          "-" +
-          dd
-      )
-      .then(function(response) {
-        let ptos = filterPTOs(response.data, "PTO"); //Filter time off by PTO
-        let employeeName = person.displayName;
-
-        if (ptos === undefined) {
-          console.log(
-            `Sorry, could not found PTO information for ${employeeName}`
-          );
-          callback(
-            close(intentRequest.sessionAttributes, "Fulfilled", {
-              contentType: "PlainText",
-              content: `Sorry, could not found PTO information for ${employeeName}`
-            })
-          );
-          return;
-        }
-
-        // Success - answer to the user with the PTO days
-        callback(
-          close(intentRequest.sessionAttributes, "Fulfilled", {
-            contentType: "PlainText",
-            content: `${employeeName} you have ${ptos.balance} ${
-              ptos.units
-            } left`
-          })
+  calculateTimeOffBalance(person.id, yyyy, mm, dd)
+    .then(response => {
+      let ptos = filterPTOs(response.data, "PTO"); //Filter time off by PTO
+      let employeeName = person.displayName;
+      if (ptos === undefined) {
+        console.log(
+          `Sorry, could not found PTO information for ${employeeName}`
         );
-      })
-      .catch(function(error) {
-        console.log(error);
-      });
-  });
+        return;
+      }
+
+      // Success - answer to the user with the PTO days
+      const message = `${employeeName} you have ${ptos.balance} ${
+        ptos.units
+      } left`;
+      console.log(message);
+      fulfillWithSuccess(intentRequest, callback, message);
+    })
+    .catch(error => {
+      console.log(error);
+      fulfillWithError(intentRequest, callback, error);
+    });
 };
 
 /**
@@ -411,14 +384,8 @@ const getTimeOffBalance = function(intentRequest, callback) {
  * @param {function} callback Callback function to handle the response
  */
 const tellAJokeAboutChuckNorris = function(intentRequest, callback) {
-  let joke = chuckNorrisJoke();
-  // Success - answer to the user with the PTO days
-  callback(
-    close(intentRequest.sessionAttributes, "Fulfilled", {
-      contentType: "PlainText",
-      content: joke
-    })
-  );
+  const joke = chuckNorrisJoke();
+  fulfillWithSuccess(intentRequest, callback, joke);
 };
 
 /**
@@ -467,7 +434,7 @@ const validateTimeOffRequest = function(typeOfTimeOff, startDate, endDate) {
  * @param {Object} intentRequest Intent requet information
  * @param {function} callback Callback function to handle the response
  */
-const createTimeOffRequest = function(intentRequest, callback) {
+const createTimeOffRequest = async function(intentRequest, callback) {
   const typeOfTimeOff = intentRequest.currentIntent.slots.typeOfTimeOff;
   const startDate = intentRequest.currentIntent.slots.startDate;
   const endDate = intentRequest.currentIntent.slots.endDate;
@@ -519,60 +486,53 @@ const createTimeOffRequest = function(intentRequest, callback) {
   }
 
   const userId = getSlackUserId(intentRequest);
-
-  // An access token (from your Slack app or custom integration - xoxp, xoxb, or xoxa)
-  const token = process.env.slackApiToken;
-  const web = new WebClient(token);
-
   // Request Slack API to extract the email from the user Id
-  let slackEmail = "";
-  web.users.profile
-    .get({ user: userId })
-    .then(res => {
-      slackEmail = res.profile.email;
-    })
-    .catch(console.error);
+  let userProfile = null;
+  let person = null;
+  try {
+    userProfile = await getSlackUserProfile(userId);
+    const getEmployeesResult = await getEmployees();
 
-  getEmployees(function(employees) {
-    var person = findPersonByEmail(employees, slackEmail);
+    let slackEmail = userProfile.profile.email;
+    let employees = getEmployeesResult.data.employees;
+    person = findPersonByEmail(employees, slackEmail);
 
     if (person === undefined) {
-      console.log(`Sorry, ${slackEmail} could not be found`);
-      callback(
-        close(intentRequest.sessionAttributes, "Fulfilled", {
-          contentType: "PlainText",
-          content: `Sorry, ${slackEmail} could not be found.`
-        })
-      );
-      return;
+      let err = `Sorry, ${slackEmail} could not be found`;
+      throw err;
     }
+  } catch (error) {
+    console.log(error);
+    fulfillWithError(intentRequest, callback, error);
+    return;
+  }
 
-    // Calculate the amount of working days to request
-    if (startDate && endDate) {
-      whosOut(startDate, endDate, function(response) {
-        // Filter non-holidays elements from this
-        // response and put the dates for company
-        // holidays into an array.
-        let items = response.filter(function(item) {
-          return item.type === "holiday";
-        });
-        let holidays = [];
-        items.forEach(item => {
-          holidays.push(item.start);
-        });
+  // Calculate the amount of working days to request
+  if (startDate && endDate) {
+    whosOut(startDate, endDate, function(response) {
+      // Filter non-holidays elements from this
+      // response and put the dates for company
+      // holidays into an array.
+      let items = response.filter(function(item) {
+        return item.type === "holiday";
+      });
+      let holidays = [];
+      items.forEach(item => {
+        holidays.push(item.start);
+      });
 
-        // Calculate the amount of working days
-        // between the two specified dates excluding
-        // weekends and company holidays
-        let amount = moment().isoWeekdayCalc({
-          rangeStart: startDate,
-          rangeEnd: endDate,
-          weekdays: [1, 2, 3, 4, 5],
-          exclusions: holidays
-        });
+      // Calculate the amount of working days
+      // between the two specified dates excluding
+      // weekends and company holidays
+      let amount = moment().isoWeekdayCalc({
+        rangeStart: startDate,
+        rangeEnd: endDate,
+        weekdays: [1, 2, 3, 4, 5],
+        exclusions: holidays
+      });
 
-        let timeOffTypeValue = timeOffTypes[typeOfTimeOff];
-        let xmlData = `<request>
+      let timeOffTypeValue = timeOffTypes[typeOfTimeOff];
+      let xmlData = `<request>
                           <status>requested</status>
                           <start>${startDate}</start>
                           <end>${endDate}</end>
@@ -580,44 +540,32 @@ const createTimeOffRequest = function(intentRequest, callback) {
                           <amount>${amount}</amount>
                       </request>`;
 
-        console.log(xmlData);
+      console.log(xmlData);
 
-        // Send the time-off request to BambooHR API
-        bambooAPI
-          .put("/v1/employees/" + person.id + "/time_off/request/", xmlData, {
-            headers: { "Content-Type": "text/xml" }
-          })
-          .then(function(response) {
-            let approver = response.data.approvers[0].displayName;
-            let content = `OK ${
+      // Send the time-off request to BambooHR API
+      bambooAPI
+        .put("/v1/employees/" + person.id + "/time_off/request/", xmlData, {
+          headers: { "Content-Type": "text/xml" }
+        })
+        .then(response => {
+          let approver = response.data.approvers[0].displayName;
+          let content = `OK ${
+            person.firstName
+          }, I have sent your request. Please wait for approval.`;
+          if (approver !== "") {
+            content = `OK ${
               person.firstName
-            }, I have sent your request. Please wait for approval.`;
-            if (approver !== "") {
-              content = `OK ${
-                person.firstName
-              }, I have sent your request. Please wait for approval from ${approver}.`;
-            }
-            // Fulfill the request
-            callback(
-              close(intentRequest.sessionAttributes, "Fulfilled", {
-                contentType: "PlainText",
-                content: content
-              })
-            );
-          })
-          .catch(function(error) {
-            console.log(error);
-            // Fulfill the request
-            callback(
-              close(intentRequest.sessionAttributes, "Fulfilled", {
-                contentType: "PlainText",
-                content: `Sorry your request failed. I got this error: ${error}.`
-              })
-            );
-          });
-      });
-    }
-  });
+            }, I have sent your request. Please wait for approval from ${approver}.`;
+          }
+          // Fulfill the request
+          fulfillWithSuccess(intentRequest, callback, content);
+        })
+        .catch(error => {
+          console.log(error);
+          fulfillWithError(intentRequest, callback, error);
+        });
+    });
+  }
 };
 
 /**
