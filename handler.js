@@ -143,29 +143,6 @@ const capitalize = function(text) {
 };
 
 /**
- * Finds a person on the given employees object by matching the displayName field..
- * @param {Object[]} employees Complete list of company employees.
- * @param {string} name The complete name of the employee to search for.
- * @return {Object} The object with the founded person's info. It returns undefined if not found.
- */
-const findPerson = function(employees, name) {
-  let findings = employees.filter(function(employee) {
-    if (employee.displayName === capitalize(name)) {
-      return true;
-    } else {
-      // When not direct match probably display name has two last names
-      // but the user only provided one. Test if that is the case
-      let displayName = employee.displayName;
-      displayName = displayName.substring(0, displayName.lastIndexOf(" "));
-      return displayName === capitalize(name);
-    }
-  });
-  if (findings.length > 0) {
-    return findings[0];
-  }
-};
-
-/**
  * Finds a person on the given employees object by matching the workEmail field..
  * @param {Object[]} employees Complete list of company employees.
  * @param {string} name The complete name of the employee to search for.
