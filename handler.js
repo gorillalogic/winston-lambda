@@ -8,7 +8,7 @@
  * @summary Backend logic for Winston (Amazon Lex bot).
  * @module winstonbot
  * @author Gorilla Logic
- * @version 1.2.90
+ * @version 1.3.0
  */
 
 const axios = require("axios");
@@ -319,6 +319,17 @@ const parkingAPI = axios.create({
   }
 });
 
+// ================================ Numbers API ===============================
+const numbersAPI = axios.create({
+  baseURL: "http://numbersapi.com/",
+  timeout: 6000,
+  headers: {
+    accept: "text/plain",
+    "accept-encoding": "gzip, deflate",
+    "accept-language": "en-US,en;q=0.8"
+  }
+});
+
 // ================================ Functions to handle intents =============================================================
 
 /**
@@ -622,6 +633,37 @@ const updateLicensePlate = async function(intentRequest, callback) {
     });
 };
 
+/**
+ * Handle the intent request of someone asking for the number of employees
+ * in the company.
+ * @param {Object} intentRequest Intent requet information
+ * @param {function} callback Callback function to handle the response
+ */
+const countGorillas = async function(intentRequest, callback) {
+  try {
+    const getEmployeesResult = await getEmployees();
+    const employeesCount = getEmployeesResult.data.employees.length + 1;
+
+    numbersAPI
+      .get(`/${employeesCount}/trivia?notfound=floor&fragment`)
+      .then(res => {
+        console.log(res.data);
+        const message = `We are ${employeesCount} souls which is close to ${
+          res.data
+        }.`;
+        fulfillWithSuccess(intentRequest, callback, message);
+      })
+      .catch(error => {
+        console.log(error.data);
+        const message = `We are ${employeesCount} souls.`;
+        fulfillWithSuccess(intentRequest, callback, message);
+      });
+  } catch (error) {
+    console.log(error);
+    fulfillWithError(intentRequest, callback, error);
+  }
+};
+
 // ================================ Intent dispatching ===================================================================
 
 /**
@@ -644,6 +686,8 @@ function dispatch(intentRequest, callback) {
     return createTimeOffRequest(intentRequest, callback);
   } else if (intentName === "UpdateLicensePlateNumber") {
     return updateLicensePlate(intentRequest, callback);
+  } else if (intentName === "InfoEmployeesCount") {
+    return countGorillas(intentRequest, callback);
   }
 
   // If Intent is not recognize then respond with an error
