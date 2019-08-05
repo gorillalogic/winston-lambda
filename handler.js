@@ -8,7 +8,7 @@
  * @summary Backend logic for Winston (Amazon Lex bot).
  * @module winstonbot
  * @author Gorilla Logic
- * @version 1.3.0
+ * @version 1.3.2
  */
 
 const axios = require("axios");
@@ -129,6 +129,21 @@ const timeOffTypes = {
   "Bereavement Leave": 3,
   "Paid Marriage Leave": 8,
   "Travel Requests": 7
+};
+
+/**
+ * Collection of menu images for different nearby restaurants that participate
+ * on the Gorilla Logic lunch perk for Costa Rican gorillas.
+ */
+const menus = {
+  nana:
+    "https://res.cloudinary.com/greivinlopez/image/upload/v1565023471/menus/nana.jpg",
+  mauros:
+    "https://res.cloudinary.com/greivinlopez/image/upload/v1565023470/menus/mauros.png",
+  matsuri:
+    "https://res.cloudinary.com/greivinlopez/image/upload/v1565023471/menus/matsuri.png",
+  dorado:
+    "https://res.cloudinary.com/greivinlopez/image/upload/v1565023469/menus/dorado.png"
 };
 
 /**
@@ -664,6 +679,25 @@ const countGorillas = async function(intentRequest, callback) {
   }
 };
 
+/**
+ * Response with the URL of an image of the requested restaurant's menu
+ * @param {Object} intentRequest Intent request information
+ * @param {function} callback Callback function to handle the response
+ */
+const getRestaurantMenu = function(intentRequest, callback) {
+  const restaurant = intentRequest.currentIntent.slots.restaurant;
+
+  if (!restaurant || !menus.hasOwnProperty(restaurant)) {
+    let errorMessage = `Sorry, I'm not aware of the menu for ${restaurant}`;
+    console.log(errorMessage);
+    fulfillWithError(intentRequest, callback, errorMessage);
+  }
+
+  const menu = menus[restaurant];
+  const message = `Take a look at the menu here: ${menu}`;
+  fulfillWithSuccess(intentRequest, callback, message);
+};
+
 // ================================ Intent dispatching ===================================================================
 
 /**
@@ -688,6 +722,8 @@ function dispatch(intentRequest, callback) {
     return updateLicensePlate(intentRequest, callback);
   } else if (intentName === "InfoEmployeesCount") {
     return countGorillas(intentRequest, callback);
+  } else if (intentName === "LunchPerkMenu") {
+    return getRestaurantMenu(intentRequest, callback);
   }
 
   // If Intent is not recognize then respond with an error
