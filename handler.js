@@ -756,8 +756,11 @@ const getRestaurantMenu = function(intentRequest, callback) {
   fulfillWithSuccess(intentRequest, callback, response);
 };
 
-const getInformationAboutWellnessActivities = async function(intentRequest, callback) {
-  const { activity } = intentRequest.currentIntent.slots;
+const getInformationAboutWellnessActivities = async function(
+  intentRequest,
+  callback
+) {
+  const activity = intentRequest.currentIntent.slots.wellness;
   if (!activity || wellnessActivities.indexOf(activity) === -1) {
     const errorMessage = `Sorry I didn't get the intended activity name`;
     fulfillWithSuccess(intentRequest, callback, errorMessage);
@@ -766,7 +769,7 @@ const getInformationAboutWellnessActivities = async function(intentRequest, call
   const calendar = google.calendar("v3");
   const timeMin = moment(new Date());
   try {
-    const response = calendar.events.list({
+    const response = await calendar.events.list({
       auth: serviceAccountAuth,
       calendarId,
       timeMin: timeMin.toISOString(),
@@ -781,7 +784,7 @@ const getInformationAboutWellnessActivities = async function(intentRequest, call
       fulfillWithSuccess(intentRequest, callback, noEventsFoundMessage);
       return;
     }
-    let readableActivity = `Next ${activity} activity will be ${humanDate(event.start.dateTime)}`;
+    const readableActivity = `Next ${activity} activity will be ${humanDate(event.start.dateTime)}`;
     const additionalText = 
       event.description 
       ? `${event.description}. To stay up to date with the coming activities visit the company's portal.` 
