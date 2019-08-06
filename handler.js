@@ -136,14 +136,25 @@ const timeOffTypes = {
  * on the Gorilla Logic lunch perk for Costa Rican gorillas.
  */
 const menus = {
-  nana:
-    "https://res.cloudinary.com/greivinlopez/image/upload/v1565023471/menus/nana.jpg",
-  mauros:
-    "https://res.cloudinary.com/greivinlopez/image/upload/v1565023470/menus/mauros.png",
-  matsuri:
-    "https://res.cloudinary.com/greivinlopez/image/upload/v1565023471/menus/matsuri.png",
-  dorado:
-    "https://res.cloudinary.com/greivinlopez/image/upload/v1565023469/menus/dorado.png"
+  nana: `The menu will be open (i.e. there will not be a specific menu for the Gorilla Logic Lunch Perk).
+Take a look at the menu here:
+https://res.cloudinary.com/greivinlopez/image/upload/v1565023471/menus/nana.jpg`,
+  mauros: `A specific menu will be offered at these restaurants for the Gorilla Logic Lunch Perk, which consultants are to request.
+Take a look at the menu here:
+https://res.cloudinary.com/greivinlopez/image/upload/v1565023470/menus/mauros.png`,
+  matsuri: `A specific menu will be offered at these restaurants for the Gorilla Logic Lunch Perk, which consultants are to request.
+Take a look at the menu here:
+https://res.cloudinary.com/greivinlopez/image/upload/v1565023471/menus/matsuri.png`,
+  dorado: `The dish of the day will be offered for the Gorilla Logic Lunch Perk.
+Take a look at the menu here:
+https://res.cloudinary.com/greivinlopez/image/upload/v1565023469/menus/dorado.png`,
+  chefilisimo: `This service may be used by following this link:
+https://docs.google.com/forms/d/1wD9W0fa1qa_p3AtXAqvf8l1STQ1HLjQ-4n1YIbaDrKo/edit?usp=sharing
+Orders are to be made the day before, and they will be delivered directly to the office.
+Meal orders will be delivered to the office at 11:30 a.m. on the 10th floor. Consultants will be
+responsible for picking up their orders.`,
+  cosi: `The “Taste two” menu will be offered for the Gorilla Logic Lunch Perk.`,
+  cherry: `The menu will be open (i.e. there will not be a specific menu for the Gorilla Logic Lunch Perk).`
 };
 
 /**
@@ -688,14 +699,12 @@ const getRestaurantMenu = function(intentRequest, callback) {
   const restaurant = intentRequest.currentIntent.slots.restaurant;
 
   if (!restaurant || !menus.hasOwnProperty(restaurant)) {
-    let errorMessage = `Sorry, I'm not aware of the menu for ${restaurant}`;
-    console.log(errorMessage);
-    fulfillWithError(intentRequest, callback, errorMessage);
+    const errorMessage = `Sorry, I'm not aware of the menu for ${restaurant}`;
+    fulfillWithSuccess(intentRequest, callback, errorMessage);
   }
 
-  const menu = menus[restaurant];
-  const message = `Take a look at the menu here: ${menu}`;
-  fulfillWithSuccess(intentRequest, callback, message);
+  const response = menus[restaurant];
+  fulfillWithSuccess(intentRequest, callback, response);
 };
 
 // ================================ Intent dispatching ===================================================================
