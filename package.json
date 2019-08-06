@@ -4,6 +4,7 @@
   "description": "JS code to handle requests to third party APIs for Winston virtual assistant",
   "main": "handler.js",
   "scripts": {
+    "lint": "eslint *.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Gorilla Logic",
@@ -14,5 +15,11 @@
     "googleapis": "^42.0.0",
     "moment": "^2.24.0",
     "moment-weekday-calc": "^1.1.4"
+  },
+  "devDependencies": {
+    "eslint": "^6.1.0",
+    "eslint-config-prettier": "^6.0.0",
+    "eslint-plugin-prettier": "^3.1.0",
+    "prettier": "^1.18.2"
   }
 }
