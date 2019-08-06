@@ -756,7 +756,7 @@ const getRestaurantMenu = function(intentRequest, callback) {
   fulfillWithSuccess(intentRequest, callback, response);
 };
 
-const getInformationAboutWellnessActivities = function(
+const getInformationAboutWellnessActivities = async function(
   intentRequest,
   callback
 ) {
@@ -768,39 +768,34 @@ const getInformationAboutWellnessActivities = function(
   }
   const calendar = google.calendar("v3");
   const timeMin = moment(new Date());
-  calendar.events
-    .list({
+  try {
+    const response = await calendar.events.list({
       auth: serviceAccountAuth,
       calendarId,
       timeMin: timeMin.toISOString(),
       maxResults: 10,
       singleEvents: true,
       orderBy: "startTime"
-    })
-    .then(response => {
-      const events = response.data.items;
-      const event = getUpcomingWellnessEvent(activity, events);
-      if (!event) {
-        const noEventsFoundMessage = `No events found`;
-        fulfillWithSuccess(intentRequest, callback, noEventsFoundMessage);
-        return;
-      }
-      let readableActivity = `Next ${activity} activity will be ${humanDate(
-        event.start.dateTime
-      )}`;
-      const additionalText = event.description
-        ? `${
-            event.description
-          }. To stay up to date with the coming activities visit the company's portal.`
-        : `To stay up to date with the coming activities visit the company's portal.`;
-      const eventsUrl = "https://band.gorillalogic.com/events/";
-      const message = `${readableActivity}\n${additionalText}\nSee events:\n${eventsUrl}`;
-      fulfillWithSuccess(intentRequest, callback, message);
-    })
-    .error(error => {
-      console.log(error);
-      fulfillWithError(intentRequest, callback, error);
-    });
+    });  
+    const events = response.data.items;
+    const event = getUpcomingWellnessEvent(activity, events);
+    if (!event) {
+      const noEventsFoundMessage = `No events found`;
+      fulfillWithSuccess(intentRequest, callback, noEventsFoundMessage);
+      return;
+    }
+    const readableActivity = `Next ${activity} activity will be ${humanDate(event.start.dateTime)}`;
+    const additionalText = 
+      event.description 
+      ? `${event.description}. To stay up to date with the coming activities visit the company's portal.` 
+      : `To stay up to date with the coming activities visit the company's portal.`;
+    const eventsUrl = "https://band.gorillalogic.com/events/";
+    const message = `${readableActivity}\n${additionalText}\nSee events:\n${eventsUrl}`;
+    fulfillWithSuccess(intentRequest, callback, message);
+  } catch (error) {
+    console.log(error);
+    fulfillWithError(intentRequest, callback, error);
+  }
 };
 
 // ================================ Intent dispatching ===================================================================
