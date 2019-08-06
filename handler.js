@@ -760,7 +760,7 @@ const getInformationAboutWellnessActivities = function(
   intentRequest,
   callback
 ) {
-  const { activity } = intentRequest.currentIntent.slots.wellness;
+  const activity = intentRequest.currentIntent.slots.wellness;
   if (!activity || wellnessActivities.indexOf(activity) === -1) {
     const errorMessage = `Sorry I didn't get the intended activity name`;
     fulfillWithSuccess(intentRequest, callback, errorMessage);
