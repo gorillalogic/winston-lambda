@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Winston module.
@@ -11,11 +11,11 @@
  * @version 1.3.2
  */
 
-const axios = require("axios");
-const { WebClient } = require("@slack/client"); // https://github.com/slackapi/node-slack-sdk
-const moment = require("moment");
+const axios = require('axios');
+const { WebClient } = require('@slack/client'); // https://github.com/slackapi/node-slack-sdk
+const moment = require('moment');
 moment().format();
-require("moment-weekday-calc");
+require('moment-weekday-calc');
 
 // ================================ Lex Bot Helpers ===================================================================
 
@@ -37,12 +37,12 @@ function elicitSlot(
   return {
     sessionAttributes,
     dialogAction: {
-      type: "ElicitSlot",
+      type: 'ElicitSlot',
       intentName,
       slots,
       slotToElicit,
-      message
-    }
+      message,
+    },
   };
 }
 
@@ -50,10 +50,10 @@ function close(sessionAttributes, fulfillmentState, message) {
   return {
     sessionAttributes,
     dialogAction: {
-      type: "Close",
+      type: 'Close',
       fulfillmentState,
-      message
-    }
+      message,
+    },
   };
 }
 
@@ -61,9 +61,9 @@ function delegate(sessionAttributes, slots) {
   return {
     sessionAttributes,
     dialogAction: {
-      type: "Delegate",
-      slots
-    }
+      type: 'Delegate',
+      slots,
+    },
   };
 }
 
@@ -71,13 +71,13 @@ function buildValidationResult(isValid, violatedSlot, messageContent) {
   if (messageContent == null) {
     return {
       isValid,
-      violatedSlot
+      violatedSlot,
     };
   }
   return {
     isValid,
     violatedSlot,
-    message: { contentType: "PlainText", content: messageContent }
+    message: { contentType: 'PlainText', content: messageContent },
   };
 }
 
@@ -107,9 +107,9 @@ const fulfillWithError = (intentRequest, callback, message) => {
 const fulfillWithMessage = (intentRequest, callback, message) => {
   // Fulfill the intent with a error response
   callback(
-    close(intentRequest.sessionAttributes, "Fulfilled", {
-      contentType: "PlainText",
-      content: message
+    close(intentRequest.sessionAttributes, 'Fulfilled', {
+      contentType: 'PlainText',
+      content: message,
     })
   );
 };
@@ -125,10 +125,10 @@ const fulfillWithMessage = (intentRequest, callback, message) => {
  */
 const timeOffTypes = {
   PTO: 1,
-  "Unpaid time off": 6,
-  "Bereavement Leave": 3,
-  "Paid Marriage Leave": 8,
-  "Travel Requests": 7
+  'Unpaid time off': 6,
+  'Bereavement Leave': 3,
+  'Paid Marriage Leave': 8,
+  'Travel Requests': 7,
 };
 
 /**
@@ -154,10 +154,10 @@ Orders are to be made the day before, and they will be delivered directly to the
 Meal orders will be delivered to the office at 11:30 a.m. on the 10th floor. Consultants will be
 responsible for picking up their orders.`,
   cosi: `The “Taste two” menu will be offered for the Gorilla Logic Lunch Perk.`,
-  cherry: `The menu will be open (i.e. there will not be a specific menu for the Gorilla Logic Lunch Perk).`
+  cherry: `The menu will be open (i.e. there will not be a specific menu for the Gorilla Logic Lunch Perk).`,
 };
 
-const wellnessActivities = ["Yoga", "ZenFit", "MMA"];
+const wellnessActivities = ['Yoga', 'ZenFit', 'MMA'];
 
 /**
  * Gets a human readable representation of the given date.
@@ -211,60 +211,60 @@ const chuckNorrisJoke = function() {
     "Chuck Norris doesn't flush the toilet...he scares the shit out of it.",
     "Chuck Norris has a grizzly bear carpet in his room. The bear isn't dead it is just afraid to move.",
     "Chuck Norris died 20 years ago, Death just hasn't built up the courage to tell him yet.",
-    "While learning CPR Chuck Norris actually brought the practice dummy to life.",
+    'While learning CPR Chuck Norris actually brought the practice dummy to life.',
     "Chuck Norris has already been to Mars; that's why there are no signs of life.",
-    "Chuck Norris and Superman once fought each other on a bet. The loser had to start wearing his underwear on the outside of his pants.",
-    "Chuck norris went skydiving and his parachute failed to open, so he took it back the next day for a refund.",
+    'Chuck Norris and Superman once fought each other on a bet. The loser had to start wearing his underwear on the outside of his pants.',
+    'Chuck norris went skydiving and his parachute failed to open, so he took it back the next day for a refund.',
     "Chuck Norris doesn't dial the wrong number, you pick up the wrong phone.",
-    "Did you know Chuck Norris had a role in Star Wars?. He was the force.",
+    'Did you know Chuck Norris had a role in Star Wars?. He was the force.',
     "Chuck Norris will never have a heart attack. His heart isn't nearly foolish enough to attack him.",
-    "Before going to bed, the Boogeyman always checks his closet for Chuck Norris.",
-    "Chuck Norris counted to infinity - twice.",
-    "Chuck Norris uses a stunt double during crying scenes.",
+    'Before going to bed, the Boogeyman always checks his closet for Chuck Norris.',
+    'Chuck Norris counted to infinity - twice.',
+    'Chuck Norris uses a stunt double during crying scenes.',
     'Voldemort refers to Chuck Norris as "You Know Who."',
     "When Chuck Norris does a push up, he isn't lifting himself up, he's pushing the Earth down.",
-    "Death once had a near Chuck Norris experience.",
-    "Chuck Norris frequently donates blood to the Red Cross. Just never his own.",
-    "Chuck Norris can light a fire by rubbing two ice-cubes together.",
-    "Chuck Norris once went to court for a crime, the judge pleaded guilty.",
-    "Chuck Norris ordered a Big Mac at Burger King, and got one.",
-    "Chuck Norris can pick oranges from an apple tree and make the best lemonade youve ever tasted.",
-    "Chuck Norris protects his body guards.",
-    "Chuck Norris makes onions cry.",
-    "Chuck Norris won the Boston marathon in New York.",
+    'Death once had a near Chuck Norris experience.',
+    'Chuck Norris frequently donates blood to the Red Cross. Just never his own.',
+    'Chuck Norris can light a fire by rubbing two ice-cubes together.',
+    'Chuck Norris once went to court for a crime, the judge pleaded guilty.',
+    'Chuck Norris ordered a Big Mac at Burger King, and got one.',
+    'Chuck Norris can pick oranges from an apple tree and make the best lemonade youve ever tasted.',
+    'Chuck Norris protects his body guards.',
+    'Chuck Norris makes onions cry.',
+    'Chuck Norris won the Boston marathon in New York.',
     "Chuck Norris knows Victoria's secret.",
-    "A cop once pulled Chuck Norris over...Luckily, the cop left only with a warning.",
+    'A cop once pulled Chuck Norris over...Luckily, the cop left only with a warning.',
     "Chuck Norris can lift up a chair with one hand... While he's sitting on it...",
-    "Once a cobra bit Chuck Norris. After 5 days of extreme pain... the snake finally died.",
-    "There used to be a street named after Chuck Norris, but it was changed because nobody crosses Chuck Norris and lives.",
-    "Chuck Norris can strangle you with a cordless phone.",
+    'Once a cobra bit Chuck Norris. After 5 days of extreme pain... the snake finally died.',
+    'There used to be a street named after Chuck Norris, but it was changed because nobody crosses Chuck Norris and lives.',
+    'Chuck Norris can strangle you with a cordless phone.',
     "When the President pushes the big red button, Chuck Norris's cell phone rings.",
-    "Aliens believe in Chuck Norris.",
-    "Chuck Norris can win an argument with his wife.",
-    "While vacationing in France, Chuck Norris went out for a casual bike ride and accidentally won the Tour de France.",
-    "Chuck Norris can whistle in five different languages, including sign language and braille."
+    'Aliens believe in Chuck Norris.',
+    'Chuck Norris can win an argument with his wife.',
+    'While vacationing in France, Chuck Norris went out for a casual bike ride and accidentally won the Tour de France.',
+    'Chuck Norris can whistle in five different languages, including sign language and braille.',
   ];
   return jokes[Math.floor(Math.random() * jokes.length)];
 };
 
 // ================================ BambooHR API ============================================================================
-const subDomain = "gorillalogic";
+const subDomain = 'gorillalogic';
 
 /**
  * Base configuration for BambooHR API requests
  */
 const bambooAPI = axios.create({
-  baseURL: "https://api.bamboohr.com/api/gateway.php/" + subDomain,
+  baseURL: 'https://api.bamboohr.com/api/gateway.php/' + subDomain,
   auth: {
     username: process.env.bambooApiKey,
-    password: "x"
+    password: 'x',
   },
   timeout: 6000,
   headers: {
-    accept: "application/json",
-    "accept-encoding": "gzip, deflate",
-    "accept-language": "en-US,en;q=0.8"
-  }
+    accept: 'application/json',
+    'accept-encoding': 'gzip, deflate',
+    'accept-language': 'en-US,en;q=0.8',
+  },
 });
 
 /**
@@ -272,7 +272,7 @@ const bambooAPI = axios.create({
  * @param {function} doSomething Callback function expected to do something with the list of employees
  */
 const getEmployees = () => {
-  return bambooAPI.get("/v1/employees/directory");
+  return bambooAPI.get('/v1/employees/directory');
 };
 
 /**
@@ -284,7 +284,7 @@ const getEmployees = () => {
  */
 const calculateTimeOffBalance = (id, y, m, d) => {
   return bambooAPI.get(
-    "/v1/employees/" + id + "/time_off/calculator/?end=" + y + "-" + m + "-" + d
+    '/v1/employees/' + id + '/time_off/calculator/?end=' + y + '-' + m + '-' + d
   );
 };
 
@@ -312,7 +312,7 @@ const slackApiToken = process.env.slackApiToken;
 
 /**
  * Extracts the user ID needed for calls to the Slack API as sent by the client
- * @param {Object} intentRequest Intent requet information
+ * @param {Object} intentRequest Intent request information
  * @returns {string} The user ID for the Slack API coming on the client request
  */
 const getSlackUserId = intentRequest => {
@@ -323,7 +323,7 @@ const getSlackUserId = intentRequest => {
    * The value will be Slack if the user comes from slack.
    */
   let userId = intentRequest.userId;
-  userId = userId.slice(userId.lastIndexOf(":") + 1);
+  userId = userId.slice(userId.lastIndexOf(':') + 1);
   return userId;
 };
 
@@ -349,50 +349,50 @@ const getSlackUserProfile = userId => {
 // ================================ ParkingBot API ============================================================================
 // Parking bot configuration
 const parkingAPI = axios.create({
-  baseURL: "https://9pfd6h0h3e.execute-api.us-east-1.amazonaws.com/dev/",
+  baseURL: 'https://9pfd6h0h3e.execute-api.us-east-1.amazonaws.com/dev/',
   timeout: 10000,
   headers: {
-    accept: "application/json",
-    "accept-encoding": "gzip, deflate",
-    "accept-language": "en-US,en;q=0.8",
-    "content-type": "application/json"
-  }
+    accept: 'application/json',
+    'accept-encoding': 'gzip, deflate',
+    'accept-language': 'en-US,en;q=0.8',
+    'content-type': 'application/json',
+  },
 });
 
 // ================================ Numbers API ===============================
 const numbersAPI = axios.create({
-  baseURL: "http://numbersapi.com/",
+  baseURL: 'http://numbersapi.com/',
   timeout: 6000,
   headers: {
-    accept: "text/plain",
-    "accept-encoding": "gzip, deflate",
-    "accept-language": "en-US,en;q=0.8"
-  }
+    accept: 'text/plain',
+    'accept-encoding': 'gzip, deflate',
+    'accept-language': 'en-US,en;q=0.8',
+  },
 });
 
 // ================================ Google Calendar ===============================
-const { google } = require("googleapis");
+const { google } = require('googleapis');
 
-const calendarId = "6i7h19gftsao0fl18nibeukts8@group.calendar.google.com";
+const calendarId = '6i7h19gftsao0fl18nibeukts8@group.calendar.google.com';
 const serviceAccount = {
-  type: "service_account",
-  project_id: "winston-2d06e",
-  private_key_id: "c34bced7e2e96c08b067de38f1fd418eee4c5aa6",
+  type: 'service_account',
+  project_id: 'winston-2d06e',
+  private_key_id: 'c34bced7e2e96c08b067de38f1fd418eee4c5aa6',
   private_key:
-    "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDLoqVrN4RRB6y/\nd5mrovpsI7Kcx4SKN6gwZ0ohcBTim+p7f5Qz3e09/UcMY0fecNZy9zGzpadj3FkW\nYkZRufEdDZ8JbxaT1TYepioQMQecXC1B53hXURfzhbBlR9iaYmz6A2Cnu7jC24zF\ncNOKBFqhUgECxokJASwZ32S+V2eB32B+Mz6Mk6gx0/9ASOKtmlV6myPQlIOn1oug\nx9Y+m15QDL0wf0CwgR957vRkZOGibdAqVzCHoKOsKO1i5A8ktehrK6Htp4yT/sCT\nlk4Ocw+mP2TJ5d2mf3C8sXfRZ0lOP9HGvhTuY4ohjB7J4uIiDo2CDN71RhoGVv6I\n/Ii1iIYLAgMBAAECggEAF5u9rdZ74qEPKAuHp1x3x/3DgWWoOhYFy8bN016ZLUSC\nRNsfpXu/O4aXrBn+hQ1z71Q1UOyNoYg0U+IE4Qi7qXCg1Ykphu4bHiaJjeMBTOFq\n5c8eJpFiQ3tmXfecZxmuJLYriIa8/upRQbq467FhiH5nW5kE3iRipoU9usuLVoUI\nDMsEtZLey5xHteYdgRMu3dmSSofvFs6cPWYlcxkl6sY6FGY4aLlxGuURXVHwz7OV\nnVN1DY7TmqnzyaPPiBY9X9Of24Ieoalx8He5hCE3MyVp+pNbD8W7IrVAUQ8OI8WT\nB4O2FnEGtqDbLLElr/MJc+ZSVHPQlqZ5Ec0csWPPUQKBgQD7bmoWa585BC77oY1o\nu+Bt5no23yEezPLt3WGCradFMhXeGuaxX7KyaAQoyrLc5ysvsskv/tScvcmC9bIQ\nsARD5kIRISsExJaoRrOzgrkFLNQuPrwTY0w6EDDkSUy7Cr6zLl4avhrIj/6luLf0\n/WHZcK85nU80Gz5eN+GCbpzsNQKBgQDPVeYVCdsEbCSIGF7F6mziWucrvl1N2fSy\nc1T6xtegf5oeioA0yMI8IuSFCLQroBceUEzCcADAU98HpvVxFUhnVJAWYymkDWY4\nt0yaR/qek63Ar4G9wg+85GtzLQTRJnh3k10GlR+t1ggOErTrn7KEzG/3mJU4c2Hz\nqgyWVOtxPwKBgFK+w6sdQAlDlzK4uBD/w5xnfVERnZTFXi1p7e1TuPjMwuWVdNZq\n6CROlw/VpYeNjGjmLc/dzZrH2sl+kltrkfvGi3eXstCe4fX/TqSFIN7TIgEWJE89\nHpj9OxnmBZqIrrnJSK8EYUwgF23ynJfDy7ADpacQXkCHtr7LJSwHux0BAoGANVoF\nOqSulxS80chzmroYCqcZlUgG+mF7de/3jhBcrBApuHIrS2ndkVvpMdJrik5HpKVF\nG0N27gam/XEY92BioTRBX4Fk1bIc+7svGwQqmWOm8k43NH0bT5/3hkuvUaJ0nVBu\nP6Nf43uP1w85Puh5J3Lz3OKGg2AtdGXtl0GC1EECgYAPdtuhlLhCS9JW9f/IrvGo\n24s2nNxHzXywyTC5rfGApFxHngTNrVzYsLEFgMEvF5I8sQTd9pa7FBAdIS+rTvLU\nOZT4S+67n7Q8fHbMayiM3qVmNEw86iq8d4gj8npGAn1pYP9u4lsK0byoaxe5kki7\nCsc4Eg52IgiBEiJY7TTtFg==\n-----END PRIVATE KEY-----\n",
-  client_email: "wellness-activities@winston-2d06e.iam.gserviceaccount.com",
-  client_id: "103934030182041620924",
-  auth_uri: "https://accounts.google.com/o/oauth2/auth",
-  token_uri: "https://oauth2.googleapis.com/token",
-  auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
+    '-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDLoqVrN4RRB6y/\nd5mrovpsI7Kcx4SKN6gwZ0ohcBTim+p7f5Qz3e09/UcMY0fecNZy9zGzpadj3FkW\nYkZRufEdDZ8JbxaT1TYepioQMQecXC1B53hXURfzhbBlR9iaYmz6A2Cnu7jC24zF\ncNOKBFqhUgECxokJASwZ32S+V2eB32B+Mz6Mk6gx0/9ASOKtmlV6myPQlIOn1oug\nx9Y+m15QDL0wf0CwgR957vRkZOGibdAqVzCHoKOsKO1i5A8ktehrK6Htp4yT/sCT\nlk4Ocw+mP2TJ5d2mf3C8sXfRZ0lOP9HGvhTuY4ohjB7J4uIiDo2CDN71RhoGVv6I\n/Ii1iIYLAgMBAAECggEAF5u9rdZ74qEPKAuHp1x3x/3DgWWoOhYFy8bN016ZLUSC\nRNsfpXu/O4aXrBn+hQ1z71Q1UOyNoYg0U+IE4Qi7qXCg1Ykphu4bHiaJjeMBTOFq\n5c8eJpFiQ3tmXfecZxmuJLYriIa8/upRQbq467FhiH5nW5kE3iRipoU9usuLVoUI\nDMsEtZLey5xHteYdgRMu3dmSSofvFs6cPWYlcxkl6sY6FGY4aLlxGuURXVHwz7OV\nnVN1DY7TmqnzyaPPiBY9X9Of24Ieoalx8He5hCE3MyVp+pNbD8W7IrVAUQ8OI8WT\nB4O2FnEGtqDbLLElr/MJc+ZSVHPQlqZ5Ec0csWPPUQKBgQD7bmoWa585BC77oY1o\nu+Bt5no23yEezPLt3WGCradFMhXeGuaxX7KyaAQoyrLc5ysvsskv/tScvcmC9bIQ\nsARD5kIRISsExJaoRrOzgrkFLNQuPrwTY0w6EDDkSUy7Cr6zLl4avhrIj/6luLf0\n/WHZcK85nU80Gz5eN+GCbpzsNQKBgQDPVeYVCdsEbCSIGF7F6mziWucrvl1N2fSy\nc1T6xtegf5oeioA0yMI8IuSFCLQroBceUEzCcADAU98HpvVxFUhnVJAWYymkDWY4\nt0yaR/qek63Ar4G9wg+85GtzLQTRJnh3k10GlR+t1ggOErTrn7KEzG/3mJU4c2Hz\nqgyWVOtxPwKBgFK+w6sdQAlDlzK4uBD/w5xnfVERnZTFXi1p7e1TuPjMwuWVdNZq\n6CROlw/VpYeNjGjmLc/dzZrH2sl+kltrkfvGi3eXstCe4fX/TqSFIN7TIgEWJE89\nHpj9OxnmBZqIrrnJSK8EYUwgF23ynJfDy7ADpacQXkCHtr7LJSwHux0BAoGANVoF\nOqSulxS80chzmroYCqcZlUgG+mF7de/3jhBcrBApuHIrS2ndkVvpMdJrik5HpKVF\nG0N27gam/XEY92BioTRBX4Fk1bIc+7svGwQqmWOm8k43NH0bT5/3hkuvUaJ0nVBu\nP6Nf43uP1w85Puh5J3Lz3OKGg2AtdGXtl0GC1EECgYAPdtuhlLhCS9JW9f/IrvGo\n24s2nNxHzXywyTC5rfGApFxHngTNrVzYsLEFgMEvF5I8sQTd9pa7FBAdIS+rTvLU\nOZT4S+67n7Q8fHbMayiM3qVmNEw86iq8d4gj8npGAn1pYP9u4lsK0byoaxe5kki7\nCsc4Eg52IgiBEiJY7TTtFg==\n-----END PRIVATE KEY-----\n',
+  client_email: 'wellness-activities@winston-2d06e.iam.gserviceaccount.com',
+  client_id: '103934030182041620924',
+  auth_uri: 'https://accounts.google.com/o/oauth2/auth',
+  token_uri: 'https://oauth2.googleapis.com/token',
+  auth_provider_x509_cert_url: 'https://www.googleapis.com/oauth2/v1/certs',
   client_x509_cert_url:
-    "https://www.googleapis.com/robot/v1/metadata/x509/wellness-activities%40winston-2d06e.iam.gserviceaccount.com"
+    'https://www.googleapis.com/robot/v1/metadata/x509/wellness-activities%40winston-2d06e.iam.gserviceaccount.com',
 };
 
 const serviceAccountAuth = new google.auth.JWT({
   email: serviceAccount.client_email,
   key: serviceAccount.private_key,
-  scopes: "https://www.googleapis.com/auth/calendar"
+  scopes: 'https://www.googleapis.com/auth/calendar',
 });
 
 const getUpcomingWellnessEvent = function(activity, events) {
@@ -442,7 +442,7 @@ const getTimeOffBalance = async function(intentRequest, callback) {
 
   calculateTimeOffBalance(person.id, yyyy, mm, dd)
     .then(response => {
-      let ptos = filterPTOs(response.data, "PTO"); //Filter time off by PTO
+      let ptos = filterPTOs(response.data, 'PTO'); //Filter time off by PTO
       let employeeName = person.displayName;
       if (ptos === undefined) {
         console.log(
@@ -452,9 +452,7 @@ const getTimeOffBalance = async function(intentRequest, callback) {
       }
 
       // Success - answer to the user with the PTO days
-      const message = `${employeeName} you have ${ptos.balance} ${
-        ptos.units
-      } left`;
+      const message = `${employeeName} you have ${ptos.balance} ${ptos.units} left`;
       console.log(message);
       fulfillWithSuccess(intentRequest, callback, message);
     })
@@ -479,7 +477,7 @@ const tellAJokeAboutChuckNorris = function(intentRequest, callback) {
  * with a boolean value describing if validation passed and the violated slot and
  * the error message to be sent back to the user.
  * @param {String} typeOfTimeOff Type of timeoff requested. Uses a custom slot type from the Lex bot.
- * @param {String} startDate The stard date in the form YYYY-MM-DD.
+ * @param {String} startDate The start date in the form YYYY-MM-DD.
  * @param {String} endDate The end date in the form YYYY-MM-DD.
  */
 const validateTimeOffRequest = function(typeOfTimeOff, startDate, endDate) {
@@ -489,7 +487,7 @@ const validateTimeOffRequest = function(typeOfTimeOff, startDate, endDate) {
   ) {
     return buildValidationResult(
       false,
-      "typeOfTimeOff",
+      'typeOfTimeOff',
       `Sorry I can't create a time off request for ${typeOfTimeOff}, would you like a different type of time off?`
     );
   }
@@ -497,7 +495,7 @@ const validateTimeOffRequest = function(typeOfTimeOff, startDate, endDate) {
     if (new Date(startDate) < new Date()) {
       return buildValidationResult(
         false,
-        "startDate",
+        'startDate',
         `I can't schedule a time off request in the past! Can you provide a different date?`
       );
     }
@@ -506,8 +504,8 @@ const validateTimeOffRequest = function(typeOfTimeOff, startDate, endDate) {
     if (new Date(endDate) < new Date(startDate)) {
       return buildValidationResult(
         false,
-        "endDate",
-        "Your return date must be after your leave date! Can you try a different date?"
+        'endDate',
+        'Your return date must be after your leave date! Can you try a different date?'
       );
     }
   }
@@ -517,7 +515,7 @@ const validateTimeOffRequest = function(typeOfTimeOff, startDate, endDate) {
 /**
  * Handle the intent of a user trying to create a new time off request.
  * @todo Refactor this code for a more readable version. Take a look at updateLicensePlate
- * @param {Object} intentRequest Intent requet information
+ * @param {Object} intentRequest Intent request information
  * @param {function} callback Callback function to handle the response
  */
 const createTimeOffRequest = async function(intentRequest, callback) {
@@ -527,7 +525,7 @@ const createTimeOffRequest = async function(intentRequest, callback) {
   // Session attributes from the intent.
   var outputSessionAttributes = intentRequest.sessionAttributes;
 
-  if (intentRequest.invocationSource === "DialogCodeHook") {
+  if (intentRequest.invocationSource === 'DialogCodeHook') {
     // Perform basic validation on the supplied input slots.
     // Use the elicitSlot dialog action to re-prompt for the first violation detected.
     const slots = intentRequest.currentIntent.slots;
@@ -553,10 +551,10 @@ const createTimeOffRequest = async function(intentRequest, callback) {
     if (startDate && endDate) {
       // @hack: For some reason this came null on Slack tests
       if (!outputSessionAttributes) {
-        outputSessionAttributes = { confirmationPrompt: "" };
+        outputSessionAttributes = { confirmationPrompt: '' };
       }
-      let displayStart = moment(startDate).format("dddd, MMMM Do YYYY");
-      let displayEnd = moment(endDate).format("dddd, MMMM Do YYYY");
+      let displayStart = moment(startDate).format('dddd, MMMM Do YYYY');
+      let displayEnd = moment(endDate).format('dddd, MMMM Do YYYY');
 
       let confirmationPrompt = `Can you confirm your ${typeOfTimeOff} request from ${displayStart} to ${displayEnd}?`;
       if (startDate === endDate) {
@@ -600,7 +598,7 @@ const createTimeOffRequest = async function(intentRequest, callback) {
       // response and put the dates for company
       // holidays into an array.
       let items = response.filter(function(item) {
-        return item.type === "holiday";
+        return item.type === 'holiday';
       });
       let holidays = [];
       items.forEach(item => {
@@ -614,7 +612,7 @@ const createTimeOffRequest = async function(intentRequest, callback) {
         rangeStart: startDate,
         rangeEnd: endDate,
         weekdays: [1, 2, 3, 4, 5],
-        exclusions: holidays
+        exclusions: holidays,
       });
 
       let timeOffTypeValue = timeOffTypes[typeOfTimeOff];
@@ -630,18 +628,14 @@ const createTimeOffRequest = async function(intentRequest, callback) {
 
       // Send the time-off request to BambooHR API
       bambooAPI
-        .put("/v1/employees/" + person.id + "/time_off/request/", xmlData, {
-          headers: { "Content-Type": "text/xml" }
+        .put('/v1/employees/' + person.id + '/time_off/request/', xmlData, {
+          headers: { 'Content-Type': 'text/xml' },
         })
         .then(response => {
           let approver = response.data.approvers[0].displayName;
-          let content = `OK ${
-            person.firstName
-          }, I have sent your request. Please wait for approval.`;
-          if (approver !== "") {
-            content = `OK ${
-              person.firstName
-            }, I have sent your request. Please wait for approval from ${approver}.`;
+          let content = `OK ${person.firstName}, I have sent your request. Please wait for approval.`;
+          if (approver !== '') {
+            content = `OK ${person.firstName}, I have sent your request. Please wait for approval from ${approver}.`;
           }
           // Fulfill the request
           fulfillWithSuccess(intentRequest, callback, content);
@@ -659,7 +653,7 @@ const createTimeOffRequest = async function(intentRequest, callback) {
  * It first request the user information from Slack API to retrieve
  * the username which is one of the requirements to update the
  * plate using the parking bot API.
- * @param {Object} intentRequest Intent requet information
+ * @param {Object} intentRequest Intent request information
  * @param {function} callback Callback function to handle the response
  */
 const updateLicensePlate = async function(intentRequest, callback) {
@@ -691,12 +685,12 @@ const updateLicensePlate = async function(intentRequest, callback) {
     previousPlate: previousPlate.toUpperCase(),
     newPlate: newPlate.toUpperCase(),
     username: userInfo.user.name,
-    MAGIC_KEY: process.env.parkingAPIMagicKey
+    MAGIC_KEY: process.env.parkingAPIMagicKey,
   };
 
   // Update the plate number using ParkingBot API
   parkingAPI
-    .post("/update-existing-plate", content)
+    .post('/update-existing-plate', content)
     .then(res => {
       console.log(res.data);
       const message = `Your plate number was updated to ${res.data.newPlate}.`;
@@ -711,7 +705,7 @@ const updateLicensePlate = async function(intentRequest, callback) {
 /**
  * Handle the intent request of someone asking for the number of employees
  * in the company.
- * @param {Object} intentRequest Intent requet information
+ * @param {Object} intentRequest Intent request information
  * @param {function} callback Callback function to handle the response
  */
 const countGorillas = async function(intentRequest, callback) {
@@ -723,9 +717,7 @@ const countGorillas = async function(intentRequest, callback) {
       .get(`/${employeesCount}/trivia?notfound=floor&fragment`)
       .then(res => {
         console.log(res.data);
-        const message = `We are ${employeesCount} souls which is close to ${
-          res.data
-        }.`;
+        const message = `We are ${employeesCount} souls which is close to ${res.data}.`;
         fulfillWithSuccess(intentRequest, callback, message);
       })
       .catch(error => {
@@ -747,6 +739,7 @@ const countGorillas = async function(intentRequest, callback) {
 const getRestaurantMenu = function(intentRequest, callback) {
   const restaurant = intentRequest.currentIntent.slots.restaurant;
 
+  // eslint-disable-next-line no-prototype-builtins
   if (!restaurant || !menus.hasOwnProperty(restaurant)) {
     const errorMessage = `Sorry, I'm not aware of the menu for ${restaurant}`;
     fulfillWithSuccess(intentRequest, callback, errorMessage);
@@ -766,7 +759,7 @@ const getInformationAboutWellnessActivities = async function(
     fulfillWithSuccess(intentRequest, callback, errorMessage);
     return;
   }
-  const calendar = google.calendar("v3");
+  const calendar = google.calendar('v3');
   const timeMin = moment(new Date());
   try {
     const response = await calendar.events.list({
@@ -775,8 +768,8 @@ const getInformationAboutWellnessActivities = async function(
       timeMin: timeMin.toISOString(),
       maxResults: 10,
       singleEvents: true,
-      orderBy: "startTime"
-    });  
+      orderBy: 'startTime',
+    });
     const events = response.data.items;
     const event = getUpcomingWellnessEvent(activity, events);
     if (!event) {
@@ -784,12 +777,13 @@ const getInformationAboutWellnessActivities = async function(
       fulfillWithSuccess(intentRequest, callback, noEventsFoundMessage);
       return;
     }
-    const readableActivity = `Next ${activity} activity will be ${humanDate(event.start.dateTime)}`;
-    const additionalText = 
-      event.description 
-      ? `${event.description}. To stay up to date with the coming activities visit the company's portal.` 
+    const readableActivity = `Next ${activity} activity will be ${humanDate(
+      event.start.dateTime
+    )}`;
+    const additionalText = event.description
+      ? `${event.description}. To stay up to date with the coming activities visit the company's portal.`
       : `To stay up to date with the coming activities visit the company's portal.`;
-    const eventsUrl = "https://band.gorillalogic.com/events/";
+    const eventsUrl = 'https://band.gorillalogic.com/events/';
     const message = `${readableActivity}\n${additionalText}\nSee events:\n${eventsUrl}`;
     fulfillWithSuccess(intentRequest, callback, message);
   } catch (error) {
@@ -812,19 +806,19 @@ function dispatch(intentRequest, callback) {
   const intentName = intentRequest.currentIntent.name;
 
   // Dispatch to the corresponding intent handler
-  if (intentName === "TimeOffPTOBalance") {
+  if (intentName === 'TimeOffPTOBalance') {
     return getTimeOffBalance(intentRequest, callback);
-  } else if (intentName === "FunChuckNorrisJokes") {
+  } else if (intentName === 'FunChuckNorrisJokes') {
     return tellAJokeAboutChuckNorris(intentRequest, callback);
-  } else if (intentName === "CreatePTORequest") {
+  } else if (intentName === 'CreatePTORequest') {
     return createTimeOffRequest(intentRequest, callback);
-  } else if (intentName === "UpdateLicensePlateNumber") {
+  } else if (intentName === 'UpdateLicensePlateNumber') {
     return updateLicensePlate(intentRequest, callback);
-  } else if (intentName === "InfoEmployeesCount") {
+  } else if (intentName === 'InfoEmployeesCount') {
     return countGorillas(intentRequest, callback);
-  } else if (intentName === "LunchPerkMenu") {
+  } else if (intentName === 'LunchPerkMenu') {
     return getRestaurantMenu(intentRequest, callback);
-  } else if (intentName === "InfoWellnessActivity") {
+  } else if (intentName === 'InfoWellnessActivity') {
     return getInformationAboutWellnessActivities(intentRequest, callback);
   }
 
@@ -836,7 +830,7 @@ function dispatch(intentRequest, callback) {
 
 /**
  * Handle Amazon Lex bot logic for Winston.
- * Winston is virtual HR assitant.
+ * Winston is virtual HR assistant.
  * @module winstonbot
  */
 module.exports.winstonbot = (event, context, callback) => {
@@ -847,8 +841,8 @@ module.exports.winstonbot = (event, context, callback) => {
      * Sanity check to prevent others for invoking this Lambda function
      * outside the intended bot
      */
-    if (event.bot.name !== "Winston") {
-      callback("Invalid Bot Name");
+    if (event.bot.name !== 'Winston') {
+      callback('Invalid Bot Name');
     }
 
     dispatch(event, response => callback(null, response));
