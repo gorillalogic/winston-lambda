@@ -756,7 +756,7 @@ const getRestaurantMenu = function(intentRequest, callback) {
   fulfillWithSuccess(intentRequest, callback, response);
 };
 
-const getInformationAboutWellnessActivities = function(intentRequest, callback) {
+const getInformationAboutWellnessActivities = async function(intentRequest, callback) {
   const { activity } = intentRequest.currentIntent.slots;
   if (!activity || wellnessActivities.indexOf(activity) === -1) {
     const errorMessage = `Sorry I didn't get the intended activity name`;
@@ -765,14 +765,15 @@ const getInformationAboutWellnessActivities = function(intentRequest, callback) 
   }
   const calendar = google.calendar("v3");
   const timeMin = moment(new Date());
-  calendar.events.list({
-    auth: serviceAccountAuth,
-    calendarId,
-    timeMin: timeMin.toISOString(),
-    maxResults: 10,
-    singleEvents: true,
-    orderBy: "startTime"
-  }).then(response => {
+  try {
+    const response = calendar.events.list({
+      auth: serviceAccountAuth,
+      calendarId,
+      timeMin: timeMin.toISOString(),
+      maxResults: 10,
+      singleEvents: true,
+      orderBy: "startTime"
+    });  
     const events = response.data.items;
     const event = getUpcomingWellnessEvent(activity, events);
     if (!event) {
@@ -788,10 +789,10 @@ const getInformationAboutWellnessActivities = function(intentRequest, callback) 
     const eventsUrl = "https://band.gorillalogic.com/events/";
     const message = `${readableActivity}\n${additionalText}\nSee events:\n${eventsUrl}`;
     fulfillWithSuccess(intentRequest, callback, message);
-  }).error(error => {
+  } catch (error) {
     console.log(error);
     fulfillWithError(intentRequest, callback, error);
-  });
+  }
 };
 
 // ================================ Intent dispatching ===================================================================
