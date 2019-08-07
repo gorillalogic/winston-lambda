@@ -77,12 +77,18 @@ The design work for the bot was done by our UI/UX designer Ana Beatriz Bravo.
 
 #### Banner (used for Google DialogFlow version)
 
-![enter image description here](https://res.cloudinary.com/greivinlopez/image/upload/v1565191812/Winston/Assets/Winston_GoogleAssistantBanner.png)
+![Used only for DialogFlow version of the chatbot](https://res.cloudinary.com/greivinlopez/image/upload/v1565191812/Winston/Assets/Winston_GoogleAssistantBanner.png)
+
+Download the original image from here: [Winston_GoogleAssistantBanner.png](https://res.cloudinary.com/greivinlopez/image/upload/v1565191812/Winston/Assets/Winston_GoogleAssistantBanner.png)
 
 #### Slack App Icon
 
 ![enter image description here](https://res.cloudinary.com/greivinlopez/image/upload/v1565191812/Winston/Assets/Winston_192x192.png)
 
+Download the original image from here: [Winston_192x192.png](https://res.cloudinary.com/greivinlopez/image/upload/v1565191812/Winston/Assets/Winston_192x192.png)
+
 #### Full Size Icon
 
 ![enter image description here](https://res.cloudinary.com/greivinlopez/image/upload/v1565191812/Winston/Assets/Winston_512x512.png)
+
+Download the original image from here: [Winston_512x512.png](https://res.cloudinary.com/greivinlopez/image/upload/v1565191812/Winston/Assets/Winston_512x512.png)
