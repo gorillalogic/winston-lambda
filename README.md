@@ -70,3 +70,19 @@ This is the content of the configuration file for serverless. The environment va
 To deploy the lambda function use the following command:
 
     serverless deploy
+
+## Assets
+
+The design work for the bot was done by our UI/UX designer Ana Beatriz Bravo.
+
+#### Banner (used for Google DialogFlow version)
+
+![enter image description here](https://res.cloudinary.com/greivinlopez/image/upload/v1565191812/Winston/Assets/Winston_GoogleAssistantBanner.png)
+
+#### Slack App Icon
+
+![enter image description here](https://res.cloudinary.com/greivinlopez/image/upload/v1565191812/Winston/Assets/Winston_192x192.png)
+
+#### Full Size Icon
+
+![enter image description here](https://res.cloudinary.com/greivinlopez/image/upload/v1565191812/Winston/Assets/Winston_512x512.png)
