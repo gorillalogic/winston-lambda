@@ -132,17 +132,18 @@ const timeOffTypes = {
 };
 
 /**
- * Collection of menu images for different nearby restaurants that participate
+ * Collection of different responses to a user requesting a restaurant menu
+ * from the different nearby restaurants that participate
  * on the Gorilla Logic lunch perk for Costa Rican gorillas.
  */
 const menus = {
   nana: `The menu will be open (i.e. there will not be a specific menu for the Gorilla Logic Lunch Perk).
 Take a look at the menu here:
 https://res.cloudinary.com/greivinlopez/image/upload/v1565023471/menus/nana.jpg`,
-  mauros: `A specific menu will be offered at these restaurants for the Gorilla Logic Lunch Perk, which consultants are to request.
+  mauros: `A specific menu will be offered for the Gorilla Logic Lunch Perk, which consultants are to request.
 Take a look at the menu here:
 https://res.cloudinary.com/greivinlopez/image/upload/v1565023470/menus/mauros.png`,
-  matsuri: `A specific menu will be offered at these restaurants for the Gorilla Logic Lunch Perk, which consultants are to request.
+  matsuri: `A specific menu will be offered for the Gorilla Logic Lunch Perk, which consultants are to request.
 Take a look at the menu here:
 https://res.cloudinary.com/greivinlopez/image/upload/v1565023471/menus/matsuri.png`,
   dorado: `The dish of the day will be offered for the Gorilla Logic Lunch Perk.
@@ -155,6 +156,9 @@ Meal orders will be delivered to the office at 11:30 a.m. on the 10th floor. Con
 responsible for picking up their orders.`,
   cosi: `The “Taste two” menu will be offered for the Gorilla Logic Lunch Perk.`,
   cherry: `The menu will be open (i.e. there will not be a specific menu for the Gorilla Logic Lunch Perk).`,
+  bespoke: `The menu will be open (i.e. there will not be a specific menu for the Gorilla Logic Lunch Perk).`,
+  republica: `A specific menu will be offered for the Gorilla Logic Lunch Perk, which consultants are to request.`,
+  paneevino: `A specific menu will be offered for the Gorilla Logic Lunch Perk, which consultants are to request.`,
 };
 
 const wellnessActivities = ['Yoga', 'ZenFit', 'MMA'];
