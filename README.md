@@ -21,6 +21,14 @@ The Amazon Lex bot can be found here: [Winston bot](https://console.aws.amazon.c
 We use Pascal Case for the intent names on Amazon Lex. When adding new intents please ensure the name is meaningful and comprehensive try using prefix that give hint of category. For instance: _"SmallTalkSayHello"_ could be a good name for a "say hello" intent.
 Don't forget to add the new intent to the [Winston's Questions Set](https://docs.google.com/document/d/140Q0-JOVqfQer1HhfP1ux1Ut3E_yvEjpp7Opf2l4rOQ/edit) documentation.
 
+## Architecture
+
+This diagram represents the high-level architecture of the solution
+
+![enter image description here](https://res.cloudinary.com/greivinlopez/image/upload/v1565273729/Winston/Winston_Architecture_Diagram.png)
+
+The Amazon Lex chatbot is integrated with our [corporate Slack workspace](gorillalogic.slack.com). A company employee interacts with Winston by chatting with it directly (you could find it under Apps). Most of the interactions are handled directly by the bot but some intends are delegated to the AWS Lambda function such as all the actions that require data from our HR system (BambooHR).
+
 ## Deployment
 
 To upload changes to the AWS lambda function you can use [Serverless Framework](https://serverless.com/). The configuration file _serverless.yml_ is not part of the repository because it contains the secret API keys (This is a bad practice those should be handled by using a key management service such as [Amazon KMS)](https://aws.amazon.com/kms/).
@@ -39,9 +47,11 @@ Serverless: Saving your AWS profile in "~/.aws/credentials"...
 Serverless: Success! Your AWS access keys were stored under the "default" profile.
 ```
 
-#### Inspect `~/.aws/credentials` file
+#### Verify configuration file
 
-`code ~/.aws/credentials`
+Inspect the following file you should see an output as the one below:
+
+`cat ~/.aws/credentials`
 
 ```
 [default]
