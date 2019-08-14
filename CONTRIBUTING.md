@@ -1,6 +1,6 @@
 # How to Contribute
 
-Winston is one of Gorilla Logic projects which is under active development and is also being used to provide information to all collaborators about general inquiries like available PTO, nearby wellness events and others. Hopefully this document makes the process for contributing clear and answers some questions that you may have.
+Winston is one of Gorilla Logic projects which is under active development and is also being used to provide information to all collaborators about general inquiries like available PTO, upcoming wellness activities and others. Hopefully this document makes the process for contributing clear and answers some questions that you may have.
 
 ## Open Development
 
