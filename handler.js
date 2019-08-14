@@ -8,7 +8,6 @@
  * @summary Backend logic for Winston (Amazon Lex bot).
  * @module winstonbot
  * @author Gorilla Logic
- * @version 1.3.2
  */
 
 const axios = require('axios');
@@ -154,11 +153,15 @@ https://docs.google.com/forms/d/1wD9W0fa1qa_p3AtXAqvf8l1STQ1HLjQ-4n1YIbaDrKo/edi
 Orders are to be made the day before, and they will be delivered directly to the office.
 Meal orders will be delivered to the office at 11:30 a.m. on the 10th floor. Consultants will be
 responsible for picking up their orders.`,
-  cosi: `The “Taste two” menu will be offered for the Gorilla Logic Lunch Perk.`,
+  cosi: `The “Taste two” menu will be offered for the Gorilla Logic Lunch Perk.
+Take a look at the menu here:
+https://res.cloudinary.com/greivinlopez/image/upload/v1565794830/menus/cosi.jpg`,
   cherry: `The menu will be open (i.e. there will not be a specific menu for the Gorilla Logic Lunch Perk).`,
   bespoke: `The menu will be open (i.e. there will not be a specific menu for the Gorilla Logic Lunch Perk).`,
-  republica: `A specific menu will be offered for the Gorilla Logic Lunch Perk, which consultants are to request.`,
-  paneevino: `A specific menu will be offered for the Gorilla Logic Lunch Perk, which consultants are to request.`,
+  republica: `A specific menu will be offered for the Gorilla Logic Lunch Perk, which consultants are to request.
+Take a look at the menu here:
+https://res.cloudinary.com/greivinlopez/image/upload/v1565794833/menus/republica.jpg`,
+  paneevino: `A specific menu will be offered for the Gorilla Logic Lunch Perk, which consultants are to request. Sorry I don't have that menu yet.`,
 };
 
 const wellnessActivities = ['Yoga', 'ZenFit', 'MMA'];

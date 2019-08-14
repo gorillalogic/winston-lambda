@@ -1,6 +1,6 @@
 {
   "name": "winston",
-  "version": "1.0.0",
+  "version": "1.4.0",
   "description": "JS code to handle requests to third party APIs for Winston virtual assistant",
   "main": "handler.js",
   "scripts": {
