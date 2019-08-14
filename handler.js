@@ -439,7 +439,7 @@ const getTimeOffBalance = async function(intentRequest, callback) {
  * @param {function} callback Callback function to handle the response
  */
 const tellAJokeAboutChuckNorris = (intentRequest, callback) => {
-  const jokes = require("./chucknorris.json");
+  const jokes = require('./chucknorris.json');
   const joke = chooseOne(jokes);
   fulfillWithSuccess(intentRequest, callback, joke);
 };
