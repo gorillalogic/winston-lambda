@@ -1,21 +1,21 @@
-{
-  "env": {
-    "commonjs": true,
-    "es6": true,
-    "node": true
+module.exports = {
+  env: {
+    commonjs: true,
+    es6: true,
+    node: true
   },
-  "extends": [ 
+  extends: [ 
     "eslint:recommended",
     "plugin:prettier/recommended",
   ],
-  "globals": {
+  globals: {
     "Atomics": "readonly",
     "SharedArrayBuffer": "readonly"
   },
-  "parserOptions": {
+  parserOptions: {
     "ecmaVersion": 2018
   },
-  "rules": {
+  rules: {
     "no-console": "off"
   }
 }
