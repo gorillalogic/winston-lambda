@@ -8,7 +8,6 @@
  * @summary Backend logic for Winston (Amazon Lex bot).
  * @module winstonbot
  * @author Gorilla Logic
- * @version 1.4.0
  */
 
 const axios = require('axios');
