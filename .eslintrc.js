@@ -18,6 +18,8 @@ module.exports = {
   rules: {
     "no-console": "off",
     "no-warning-comments": "warn",
-    "prefer-destructuring": "warn"
+    "prefer-destructuring": "warn",
+    "prefer-const": "warn",
+    "prefer-arrow-callback": "warn"
   }
 }
