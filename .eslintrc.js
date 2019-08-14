@@ -9,13 +9,15 @@ module.exports = {
     "plugin:prettier/recommended",
   ],
   globals: {
-    "Atomics": "readonly",
-    "SharedArrayBuffer": "readonly"
+    Atomics: "readonly",
+    SharedArrayBuffer: "readonly"
   },
   parserOptions: {
-    "ecmaVersion": 2018
+    ecmaVersion: 2018
   },
   rules: {
-    "no-console": "off"
+    "no-console": "off",
+    "no-warning-comments": "warn",
+    "prefer-destructuring": "warn"
   }
 }

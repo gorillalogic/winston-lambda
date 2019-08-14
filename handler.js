@@ -13,6 +13,8 @@
 const axios = require('axios');
 const { WebClient } = require('@slack/client'); // https://github.com/slackapi/node-slack-sdk
 const moment = require('moment');
+const { bambooAPIMethods } = require('./api/bamboo');
+const { parkingAPIMethods } = require('./api/parking');
 moment().format();
 require('moment-weekday-calc');
 
@@ -218,65 +220,6 @@ const chooseOne = messages => {
   return messages[Math.floor(Math.random() * messages.length)];
 };
 
-// ================================ BambooHR API ============================================================================
-const subDomain = 'gorillalogic';
-
-/**
- * Base configuration for BambooHR API requests
- */
-const bambooAPI = axios.create({
-  baseURL: 'https://api.bamboohr.com/api/gateway.php/' + subDomain,
-  auth: {
-    username: process.env.bambooApiKey,
-    password: 'x',
-  },
-  timeout: 6000,
-  headers: {
-    accept: 'application/json',
-    'accept-encoding': 'gzip, deflate',
-    'accept-language': 'en-US,en;q=0.8',
-  },
-});
-
-/**
- * Gets the complete list of employees from the BambooHR system.
- * @param {function} doSomething Callback function expected to do something with the list of employees
- */
-const getEmployees = () => {
-  return bambooAPI.get('/v1/employees/directory');
-};
-
-/**
- * Gets the time off balance from BambooHR system.
- * @param {string} id The Slack user id
- * @param {string} y The year in the form 'yyyy'
- * @param {string} m The month in the form 'mm'
- * @param {string} d The day in the form 'dd'
- */
-const calculateTimeOffBalance = (id, y, m, d) => {
-  return bambooAPI.get(
-    '/v1/employees/' + id + '/time_off/calculator/?end=' + y + '-' + m + '-' + d
-  );
-};
-
-/**
- * Get a list of who's out, including company holidays.
- * We use this API request to get the official company holidays as it's the only way
- * @param {string} start Start date for the query request
- * @param {string} end End date for the query request
- * @param {function} doSomething Callback function expected to do something with the result
- */
-const whosOut = function(start, end, doSomething) {
-  bambooAPI
-    .get(`/v1/time_off/whos_out?start=${start}&end=${end}`)
-    .then(function(response) {
-      doSomething(response.data);
-    })
-    .catch(function(error) {
-      console.log(error);
-    });
-};
-
 // ================================ Slack API ============================================================================
 // An access token (from your Slack app or custom integration - xoxp, xoxb, or xoxa)
 const slackApiToken = process.env.slackApiToken;
@@ -316,19 +259,6 @@ const getSlackUserProfile = userId => {
   const web = new WebClient(slackApiToken);
   return web.users.profile.get({ user: userId });
 };
-
-// ================================ ParkingBot API ============================================================================
-// Parking bot configuration
-const parkingAPI = axios.create({
-  baseURL: 'https://9pfd6h0h3e.execute-api.us-east-1.amazonaws.com/dev/',
-  timeout: 10000,
-  headers: {
-    accept: 'application/json',
-    'accept-encoding': 'gzip, deflate',
-    'accept-language': 'en-US,en;q=0.8',
-    'content-type': 'application/json',
-  },
-});
 
 // ================================ Numbers API ===============================
 const numbersAPI = axios.create({
@@ -390,7 +320,7 @@ const getTimeOffBalance = async function(intentRequest, callback) {
   let person = null;
   try {
     userProfile = await getSlackUserProfile(userId);
-    const getEmployeesResult = await getEmployees();
+    const getEmployeesResult = await bambooAPIMethods.getEmployees();
 
     let slackEmail = userProfile.profile.email;
     let employees = getEmployeesResult.data.employees;
@@ -411,26 +341,27 @@ const getTimeOffBalance = async function(intentRequest, callback) {
   let mm = today.getMonth() + 1; //January is 0!
   let yyyy = today.getFullYear();
 
-  calculateTimeOffBalance(person.id, yyyy, mm, dd)
-    .then(response => {
-      let ptos = filterPTOs(response.data, 'PTO'); //Filter time off by PTO
-      let employeeName = person.displayName;
-      if (ptos === undefined) {
-        console.log(
-          `Sorry, could not found PTO information for ${employeeName}`
-        );
-        return;
-      }
-
-      // Success - answer to the user with the PTO days
-      const message = `${employeeName} you have ${ptos.balance} ${ptos.units} left`;
-      console.log(message);
-      fulfillWithSuccess(intentRequest, callback, message);
-    })
-    .catch(error => {
-      console.log(error);
-      fulfillWithError(intentRequest, callback, error);
-    });
+  try {
+    const response = await bambooAPIMethods.calculateTimeOffBalance(
+      person.id,
+      yyyy,
+      mm,
+      dd
+    );
+    let ptos = filterPTOs(response.data, 'PTO'); //Filter time off by PTO
+    let employeeName = person.displayName;
+    if (ptos === undefined) {
+      console.log(`Sorry, could not found PTO information for ${employeeName}`);
+      return;
+    }
+    // Success - answer to the user with the PTO days
+    const message = `${employeeName} you have ${ptos.balance} ${ptos.units} left`;
+    console.log(message);
+    fulfillWithSuccess(intentRequest, callback, message);
+  } catch (error) {
+    console.log(error);
+    fulfillWithError(intentRequest, callback, error);
+  }
 };
 
 /**
@@ -547,14 +478,14 @@ const createTimeOffRequest = async function(intentRequest, callback) {
   let person = null;
   try {
     userProfile = await getSlackUserProfile(userId);
-    const getEmployeesResult = await getEmployees();
+    const getEmployeesResult = await bambooAPIMethods.getEmployees();
 
-    let slackEmail = userProfile.profile.email;
-    let employees = getEmployeesResult.data.employees;
+    const slackEmail = userProfile.profile.email;
+    const employees = getEmployeesResult.data.employees;
     person = findPersonByEmail(employees, slackEmail);
 
     if (person === undefined) {
-      let err = `Sorry, ${slackEmail} could not be found`;
+      const err = `Sorry, ${slackEmail} could not be found`;
       throw err;
     }
   } catch (error) {
@@ -565,58 +496,50 @@ const createTimeOffRequest = async function(intentRequest, callback) {
 
   // Calculate the amount of working days to request
   if (startDate && endDate) {
-    whosOut(startDate, endDate, function(response) {
-      // Filter non-holidays elements from this
-      // response and put the dates for company
-      // holidays into an array.
-      let items = response.filter(function(item) {
-        return item.type === 'holiday';
-      });
-      let holidays = [];
-      items.forEach(item => {
-        holidays.push(item.start);
-      });
-
-      // Calculate the amount of working days
-      // between the two specified dates excluding
-      // weekends and company holidays
-      let amount = moment().isoWeekdayCalc({
-        rangeStart: startDate,
-        rangeEnd: endDate,
-        weekdays: [1, 2, 3, 4, 5],
-        exclusions: holidays,
-      });
-
-      let timeOffTypeValue = timeOffTypes[typeOfTimeOff];
-      let xmlData = `<request>
-                          <status>requested</status>
-                          <start>${startDate}</start>
-                          <end>${endDate}</end>
-                          <timeOffTypeId>${timeOffTypeValue}</timeOffTypeId>
-                          <amount>${amount}</amount>
-                      </request>`;
-
-      console.log(xmlData);
-
-      // Send the time-off request to BambooHR API
-      bambooAPI
-        .put('/v1/employees/' + person.id + '/time_off/request/', xmlData, {
-          headers: { 'Content-Type': 'text/xml' },
-        })
-        .then(response => {
-          let approver = response.data.approvers[0].displayName;
-          let content = `OK ${person.firstName}, I have sent your request. Please wait for approval.`;
-          if (approver !== '') {
-            content = `OK ${person.firstName}, I have sent your request. Please wait for approval from ${approver}.`;
-          }
-          // Fulfill the request
-          fulfillWithSuccess(intentRequest, callback, content);
-        })
-        .catch(error => {
-          console.log(error);
-          fulfillWithError(intentRequest, callback, error);
-        });
+    const result = await bambooAPIMethods.whosOut(startDate, endDate);
+    const response = result.data;
+    // Filter non-holidays elements from this
+    // response and put the dates for company
+    // holidays into an array.
+    const items = response.filter(function(item) {
+      return item.type === 'holiday';
     });
+    const holidays = [];
+    items.forEach(item => {
+      holidays.push(item.start);
+    });
+
+    // Calculate the amount of working days
+    // between the two specified dates excluding
+    // weekends and company holidays
+    const amount = moment().isoWeekdayCalc({
+      rangeStart: startDate,
+      rangeEnd: endDate,
+      weekdays: [1, 2, 3, 4, 5],
+      exclusions: holidays,
+    });
+
+    const timeOffTypeValue = timeOffTypes[typeOfTimeOff];
+
+    try {
+      const response = await bambooAPIMethods.sendTimeOffRequest(
+        person.id,
+        startDate,
+        endDate,
+        timeOffTypeValue,
+        amount
+      );
+      const approver = response.data.approvers[0].displayName;
+      let content = `OK ${person.firstName}, I have sent your request. Please wait for approval.`;
+      if (approver !== '') {
+        content = `OK ${person.firstName}, I have sent your request. Please wait for approval from ${approver}.`;
+      }
+      // Fulfill the request
+      fulfillWithSuccess(intentRequest, callback, content);
+    } catch (error) {
+      console.log(error);
+      fulfillWithError(intentRequest, callback, error);
+    }
   }
 };
 
@@ -653,25 +576,19 @@ const updateLicensePlate = async function(intentRequest, callback) {
     return;
   }
 
-  const content = {
-    previousPlate: previousPlate.toUpperCase(),
-    newPlate: newPlate.toUpperCase(),
-    username: userInfo.user.name,
-    MAGIC_KEY: process.env.parkingAPIMagicKey,
-  };
-
-  // Update the plate number using ParkingBot API
-  parkingAPI
-    .post('/update-existing-plate', content)
-    .then(res => {
-      console.log(res.data);
-      const message = `Your plate number was updated to ${res.data.newPlate}.`;
-      fulfillWithSuccess(intentRequest, callback, message);
-    })
-    .catch(error => {
-      console.log(error);
-      fulfillWithError(intentRequest, callback, error.response.data.error);
+  try {
+    const res = await parkingAPIMethods.updateExistingPlate({
+      previousPlate: previousPlate.toUpperCase(),
+      newPlate: newPlate.toUpperCase(),
+      username: userInfo.user.name,
     });
+    console.log(res.data);
+    const message = `Your plate number was updated to ${res.data.newPlate}.`;
+    fulfillWithSuccess(intentRequest, callback, message);
+  } catch (error) {
+    console.log(error);
+    fulfillWithError(intentRequest, callback, error.response.data.error);
+  }
 };
 
 /**
@@ -682,7 +599,7 @@ const updateLicensePlate = async function(intentRequest, callback) {
  */
 const countGorillas = async function(intentRequest, callback) {
   try {
-    const getEmployeesResult = await getEmployees();
+    const getEmployeesResult = await bambooAPIMethods.getEmployees();
     const employeesCount = getEmployeesResult.data.employees.length + 1;
 
     numbersAPI
