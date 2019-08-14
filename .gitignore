@@ -65,3 +65,8 @@ typings/
 
 # Serverless configuration
 serverless.yml
+
+# General MacOS files
+.DS_Store
+.AppleDouble
+.LSOverride
