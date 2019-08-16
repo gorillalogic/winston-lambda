@@ -50,7 +50,7 @@ const bambooAPIMethods = {
    * Send the time-off request to BambooHR API
    *
    */
-  sendTimeOffRequest(personId, start, end, timeOffTypeId, amount) {
+  sendTimeOffRequest({ personId, start, end, timeOffTypeId, amount }) {
     const xmlData = /* XML */ `
       <request>
           <status>requested</status>

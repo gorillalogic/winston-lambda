@@ -2,6 +2,7 @@ const lex = require('../../helpers/lex');
 const validateTimeOffRequest = require('../validateTimeOffRequest');
 const moment = require('moment');
 const slack = require('../../helpers/slack');
+const bamboo = require('../../helpers/bamboo');
 const { bambooAPIMethods } = require('../../api/bamboo');
 const { slackAPIMethods } = require('../../api/slack');
 
@@ -113,13 +114,13 @@ const createTimeOffRequest = async (intentRequest, callback) => {
     const timeOffTypeValue = bamboo.timeOffTypes[typeOfTimeOff];
 
     try {
-      const response = await bambooAPIMethods.sendTimeOffRequest(
-        person.id,
-        startDate,
-        endDate,
-        timeOffTypeValue,
-        amount
-      );
+      const response = await bambooAPIMethods.sendTimeOffRequest({
+        personId: person.id,
+        start: startDate,
+        end: endDate,
+        timeOffTypeId: timeOffTypeValue,
+        amount,
+      });
       const approver = response.data.approvers[0].displayName;
       let content = `OK ${person.firstName}, I have sent your request. Please wait for approval.`;
       if (approver !== '') {

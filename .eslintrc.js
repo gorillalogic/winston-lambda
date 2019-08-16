@@ -20,6 +20,7 @@ module.exports = {
     "no-warning-comments": "warn",
     "prefer-destructuring": "warn",
     "prefer-const": "warn",
-    "prefer-arrow-callback": "warn"
+    "prefer-arrow-callback": "warn",
+    "max-params": ["warn", 4]
   }
 }

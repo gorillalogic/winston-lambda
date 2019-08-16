@@ -6,6 +6,7 @@
  * {@link https://docs.aws.amazon.com/lex/latest/dg/lambda-input-response-format.html}.
  */
 
+// eslint-disable-next-line max-params
 function elicitSlot(
   sessionAttributes,
   intentName,
