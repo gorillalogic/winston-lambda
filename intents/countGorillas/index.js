@@ -9,6 +9,7 @@ const lex = require('../../helpers/lex');
  * @param {function} callback Callback function to handle the response
  */
 const countGorillas = async (intentRequest, callback) => {
+  console.log('Handling counting gorillas');
   try {
     const getEmployeesResult = await bambooAPIMethods.getEmployees();
     const employeesCount = getEmployeesResult.data.employees.length + 1;
