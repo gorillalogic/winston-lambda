@@ -4,7 +4,8 @@
   "description": "JS code to handle requests to third party APIs for Winston virtual assistant",
   "main": "handler.js",
   "scripts": {
-    "lint": "eslint *.js",
+    "lint": "eslint '**/*.js'",
+    "lint:fix": "eslint '**/*.js' --fix",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Gorilla Logic",
