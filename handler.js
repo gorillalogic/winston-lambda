@@ -157,11 +157,18 @@ responsible for picking up their orders.`,
 Take a look at the menu here:
 https://res.cloudinary.com/greivinlopez/image/upload/v1565794830/menus/cosi.jpg`,
   cherry: `The menu will be open (i.e. there will not be a specific menu for the Gorilla Logic Lunch Perk).`,
-  bespoke: `The menu will be open (i.e. there will not be a specific menu for the Gorilla Logic Lunch Perk).`,
+  marggies: `The menu will be open (i.e. there will not be a specific menu for the Gorilla Logic Lunch Perk).`,
   republica: `A specific menu will be offered for the Gorilla Logic Lunch Perk, which consultants are to request.
 Take a look at the menu here:
 https://res.cloudinary.com/greivinlopez/image/upload/v1565794833/menus/republica.jpg`,
   paneevino: `A specific menu will be offered for the Gorilla Logic Lunch Perk, which consultants are to request. Sorry I don't have that menu yet.`,
+  cerezo: `A specific menu will be offered for the Gorilla Logic Lunch Perk, which consultants are to request.
+Take a look at the menu here:
+https://res.cloudinary.com/greivinlopez/image/upload/v1570297534/menus/cerezosbistro.jpg`,
+  kotoy: `A specific menu will be offered for the Gorilla Logic Lunch Perk, which consultants are to request.
+Take a look at the menu here:
+https://res.cloudinary.com/greivinlopez/image/upload/v1570299602/menus/kotoy.jpg`,
+  potato: `A specific menu will be offered for the Gorilla Logic Lunch Perk, which consultants are to request. Sorry I don't have that menu yet.`,
 };
 
 const wellnessActivities = ['Yoga', 'ZenFit', 'MMA'];
