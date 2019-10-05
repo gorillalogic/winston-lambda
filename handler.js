@@ -341,7 +341,7 @@ const noiseAlertAPI = axios.create({
     'accept-language': 'en-US,en;q=0.8',
     'content-type': 'application/json',
   },
-})
+});
 
 // ================================ Numbers API ===============================
 const numbersAPI = axios.create({
@@ -452,7 +452,7 @@ const getTimeOffBalance = async function(intentRequest, callback) {
  * @param {function} callback Callback function to handle the response
  */
 const tellAJokeAboutChuckNorris = (intentRequest, callback) => {
-  const jokes = require("./chucknorris.json");
+  const jokes = require('./chucknorris.json');
   const joke = chooseOne(jokes);
   fulfillWithSuccess(intentRequest, callback, joke);
 };
@@ -777,7 +777,6 @@ const getInformationAboutWellnessActivities = async function(
   }
 };
 
-
 /**
  * Handle the intent request of someone making a noise alert report
  * @param {Object} intentRequest Intent request information
@@ -790,7 +789,7 @@ const reportNoiseAlert = async function(intentRequest, callback) {
   const userId = getSlackUserId(intentRequest);
   let userInfo = null;
   try {
-    // Retrieve user information from Slack using the SDK
+    // Retrieve user information from Slack
     userInfo = await getSlackUserInfo(userId);
   } catch (error) {
     console.log(error);
@@ -805,25 +804,20 @@ const reportNoiseAlert = async function(intentRequest, callback) {
   const content = {
     reporter: userInfo.user.name,
     location: {
-      floor: floor
-    }
+      floor: floor,
+    },
   };
 
-  console.log(content);
-
-  // Update the plate number using ParkingBot API
-  noiseAlertAPI
-    .post('/noisereport', content)
-    .then(res => {
-      console.log(res.data);
-      const message = `Ok. Your request was sent.`;
-      fulfillWithSuccess(intentRequest, callback, message);
-    })
-    .catch(error => {
-      console.log(error);
-      fulfillWithError(intentRequest, callback, error.response.data.error);
-    });
-}
+  try {
+    // Send report to noise alert
+    const res = await noiseAlertAPI.post('/noisereport', content);
+    console.log(res.data);
+    fulfillWithSuccess(intentRequest, callback, 'Ok. Your request was sent.');
+  } catch (error) {
+    console.log(error);
+    fulfillWithError(intentRequest, callback, error.response.data.error);
+  }
+};
 
 // ================================ Intent dispatching ===================================================================
 
@@ -854,7 +848,7 @@ function dispatch(intentRequest, callback) {
   } else if (intentName === 'InfoWellnessActivity') {
     return getInformationAboutWellnessActivities(intentRequest, callback);
   } else if (intentName === 'ReportOfficeNoiseAlert') {
-    return reportNoiseAlert(intentRequest, callback)
+    return reportNoiseAlert(intentRequest, callback);
   }
 
   // If Intent is not recognize then respond with an error
