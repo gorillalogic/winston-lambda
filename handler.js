@@ -340,7 +340,7 @@ const parkingAPI = axios.create({
 // ================================ NoiseAlert API ============================================================================
 // Noise alert configuration
 const noiseAlertAPI = axios.create({
-  baseURL: 'https://68mqx7g80g.execute-api.us-east-1.amazonaws.com/production/noisereport',
+  baseURL: 'https://68mqx7g80g.execute-api.us-east-1.amazonaws.com/production/',
   timeout: 5000,
   headers: {
     accept: 'application/json',
