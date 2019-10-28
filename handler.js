@@ -337,6 +337,19 @@ const parkingAPI = axios.create({
   },
 });
 
+// ================================ NoiseAlert API ============================================================================
+// Noise alert configuration
+const noiseAlertAPI = axios.create({
+  baseURL: 'https://68mqx7g80g.execute-api.us-east-1.amazonaws.com/production/',
+  timeout: 5000,
+  headers: {
+    accept: 'application/json',
+    'accept-encoding': 'gzip, deflate',
+    'accept-language': 'en-US,en;q=0.8',
+    'content-type': 'application/json',
+  },
+});
+
 // ================================ Numbers API ===============================
 const numbersAPI = axios.create({
   baseURL: 'http://numbersapi.com/',
@@ -446,7 +459,7 @@ const getTimeOffBalance = async function(intentRequest, callback) {
  * @param {function} callback Callback function to handle the response
  */
 const tellAJokeAboutChuckNorris = (intentRequest, callback) => {
-  const jokes = require("./chucknorris.json");
+  const jokes = require('./chucknorris.json');
   const joke = chooseOne(jokes);
   fulfillWithSuccess(intentRequest, callback, joke);
 };
@@ -771,6 +784,48 @@ const getInformationAboutWellnessActivities = async function(
   }
 };
 
+/**
+ * Handle the intent request of someone making a noise alert report
+ * @param {Object} intentRequest Intent request information
+ * @param {function} callback Callback function to handle the response
+ */
+const reportNoiseAlert = async function(intentRequest, callback) {
+  const floor = intentRequest.currentIntent.slots.floor;
+
+  // Retrieve user name from Slack
+  const userId = getSlackUserId(intentRequest);
+  let userInfo = null;
+  try {
+    // Retrieve user information from Slack
+    userInfo = await getSlackUserInfo(userId);
+  } catch (error) {
+    console.log(error);
+    fulfillWithError(
+      intentRequest,
+      callback,
+      "Failed to retrieve user's info from Slack"
+    );
+    return;
+  }
+
+  const content = {
+    reporter: userInfo.user.name,
+    location: {
+      floor: floor,
+    },
+  };
+
+  try {
+    // Send report to noise alert
+    const res = await noiseAlertAPI.post('/noisereport', content);
+    console.log(res.data);
+    fulfillWithSuccess(intentRequest, callback, 'Ok. Your request was sent.');
+  } catch (error) {
+    console.log(error);
+    fulfillWithError(intentRequest, callback, error.response.data.error);
+  }
+};
+
 // ================================ Intent dispatching ===================================================================
 
 /**
@@ -799,6 +854,8 @@ function dispatch(intentRequest, callback) {
     return getRestaurantMenu(intentRequest, callback);
   } else if (intentName === 'InfoWellnessActivity') {
     return getInformationAboutWellnessActivities(intentRequest, callback);
+  } else if (intentName === 'ReportOfficeNoiseAlert') {
+    return reportNoiseAlert(intentRequest, callback);
   }
 
   // If Intent is not recognize then respond with an error
