@@ -67,7 +67,7 @@ This is the content of the configuration file for serverless. The environment va
 
     provider:
       name: aws
-      runtime: nodejs8.10
+      runtime: nodejs12.x
 
     functions:
       winstonbot:
