@@ -148,15 +148,9 @@ https://res.cloudinary.com/greivinlopez/image/upload/v1565023471/menus/matsuri.p
   dorado: `The dish of the day will be offered for the Gorilla Logic Lunch Perk.
 Take a look at the menu here:
 https://res.cloudinary.com/greivinlopez/image/upload/v1565023469/menus/dorado.png`,
-  chefilisimo: `This service may be used by following this link:
-https://docs.google.com/forms/d/1wD9W0fa1qa_p3AtXAqvf8l1STQ1HLjQ-4n1YIbaDrKo/edit?usp=sharing
-Orders are to be made the day before, and they will be delivered directly to the office.
-Meal orders will be delivered to the office at 11:30 a.m. on the 10th floor. Consultants will be
-responsible for picking up their orders.`,
   cosi: `The -Taste Two- menu will be offered for the Gorilla Logic Lunch Perk.
 Take a look at the menu here:
 https://res.cloudinary.com/greivinlopez/image/upload/v1565794830/menus/cosi.jpg`,
-  cherry: `The menu will be open (i.e. there will not be a specific menu for the Gorilla Logic Lunch Perk).`,
   marggies: `The menu will be open (i.e. there will not be a specific menu for the Gorilla Logic Lunch Perk).`,
   republica: `A specific menu will be offered for the Gorilla Logic Lunch Perk, which consultants are to request.
 Take a look at the menu here:
@@ -169,6 +163,10 @@ https://res.cloudinary.com/greivinlopez/image/upload/v1570297534/menus/cerezosbi
 Take a look at the menu here:
 https://res.cloudinary.com/greivinlopez/image/upload/v1570299602/menus/kotoy.jpg`,
   potato: `A specific menu will be offered for the Gorilla Logic Lunch Perk, which consultants are to request. Sorry I don't have that menu yet.`,
+  punto68:`A specific menu will be offered for the Gorilla Logic Lunch Perk, which consultants are to request.
+  Take a look at the menu here:
+  https://res.cloudinary.com/greivinlopez/image/upload/v1578068068/menus/menup86.jpg`,
+  quiznos: `The menu will be open (i.e. there will not be a specific menu for the Gorilla Logic Lunch Perk).`,
 };
 
 const wellnessActivities = ['Yoga', 'ZenFit', 'MMA'];
